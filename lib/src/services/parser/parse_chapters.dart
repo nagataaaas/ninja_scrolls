@@ -1,5 +1,11 @@
+import 'dart:developer';
+
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
+import 'package:flutter_emoji/flutter_emoji.dart';
+import 'dart:math' as math;
+
+final emojiParser = EmojiParser();
 
 class Chapter {
   String title;
@@ -36,11 +42,12 @@ class EpisodeLinkGroup {
 class EpisodeLink {
   String title;
   String noteId;
+  String? emoji;
 
-  EpisodeLink({required this.title, required this.noteId});
+  EpisodeLink({required this.title, required this.noteId, this.emoji});
 }
 
-Chapter parseChapters(String html) {
+List<Chapter> parseChapters(String html) {
   final document = parse(html);
 
   // loop through all elements after first h2
@@ -50,7 +57,7 @@ Chapter parseChapters(String html) {
 
   final List<List<Element>> chapters = [];
 
-  while (current != null && chapters.length < 3) {
+  while (current != null && chapters.length < 4) {
     if (current.localName == 'h2') {
       chapters.add([current]);
     } else {
@@ -59,12 +66,17 @@ Chapter parseChapters(String html) {
     current = current.nextElementSibling;
   }
 
-  return parseNeoSaitama(chapters[0]);
+  return [
+    parseNeoSaitama(chapters[0]),
+    parseKyotoHell(chapters[1]),
+    parseNeverDies(chapters[2])
+  ];
 }
 
 Chapter parseNeoSaitama(List<Element> nodes) {
-  final title = nodes.first.innerHtml.trim().replaceAll('◆', '');
-  final description = nodes[1].innerHtml.trim();
+  final title = nodes.first.innerHtml.replaceAll('◆', ' ').trim();
+  final description =
+      nodes[1].innerHtml.trim().replaceAll(RegExp(r'(<br>)+$'), '');
 
   Element before = nodes[1];
   final List<ChapterChild> chapterChildren = [];
@@ -79,8 +91,9 @@ Chapter parseNeoSaitama(List<Element> nodes) {
         : null;
     final links = anchors
         .map((anchor) => EpisodeLink(
-            title:
-                anchor.text.trim().replaceAllMapped(RegExp(r'[【】]'), (_) => ''),
+            title: anchor.text
+                .replaceAllMapped(RegExp(r'[【】]'), (_) => ' ')
+                .trim(),
             noteId:
                 anchor.attributes['href']!.split('/').last.split('?').first))
         .toList();
@@ -95,14 +108,15 @@ Chapter parseNeoSaitama(List<Element> nodes) {
 }
 
 Chapter parseKyotoHell(List<Element> nodes) {
-  final title = nodes.first.innerHtml.trim().replaceAll('◆', '');
-  final description = nodes[1].innerHtml.trim();
+  final title = nodes.first.innerHtml.replaceAll('◆', ' ').trim();
+  final description =
+      nodes[1].innerHtml.trim().replaceAll(RegExp(r'(<br>)+$'), '');
 
   final anchors = nodes[2].querySelectorAll('a');
   final links = anchors
       .map((anchor) => EpisodeLink(
           title:
-              anchor.text.trim().replaceAllMapped(RegExp(r'[【】]'), (_) => ''),
+              anchor.text.replaceAllMapped(RegExp(r'[【】]'), (_) => ' ').trim(),
           noteId: anchor.attributes['href']!.split('/').last.split('?').first))
       .toList();
   final List<ChapterChild> chapterChildren = [
@@ -115,31 +129,48 @@ Chapter parseKyotoHell(List<Element> nodes) {
 }
 
 Chapter parseNeverDies(List<Element> nodes) {
-  final title = nodes.first.innerHtml.trim().replaceAll('◆', '');
-  final description = nodes[1].innerHtml.trim();
+  final title = nodes.first.innerHtml.replaceAll('◆', ' ').trim();
+  final description =
+      nodes[1].innerHtml.trim().replaceAll(RegExp(r'(<br>)+$'), '');
 
-  Element before = nodes[1];
   final List<ChapterChild> chapterChildren = [];
   nodes.sublist(2).forEach((node) {
     final anchors = node.querySelectorAll('a');
     if (anchors.isEmpty) {
-      before = node;
+      if (node.localName == 'figure') {
+        chapterChildren
+            .add(ChapterChild.guide(node.children[0].innerHtml.trim()));
+      }
       return;
     }
-    final groupName = before.text.trim().startsWith('◆')
-        ? before.text.trim().replaceAll('◆', '')
-        : null;
-    final links = anchors
-        .map((anchor) => EpisodeLink(
-            title:
-                anchor.text.trim().replaceAllMapped(RegExp(r'[【】]'), (_) => ''),
-            noteId:
-                anchor.attributes['href']!.split('/').last.split('?').first))
-        .toList();
+
+    print(emojiParser.count('⚾'));
+
+    String text = node.text.trim();
+    final firstLine = text.split('【').first;
+    text = text.replaceAllMapped(RegExp(r'[【】]'), (_) => ' ').trim();
+    final groupName =
+        firstLine.contains('◆') ? firstLine.replaceAll('◆', ' ').trim() : null;
+
+    final links = anchors.map((anchor) {
+      final title =
+          anchor.text.replaceAllMapped(RegExp(r'[【】]'), (_) => ' ').trim();
+      final titleIndex = text.indexOf(title);
+      final previousText = titleIndex > 0
+          ? text.substring(math.max(titleIndex - 5, 0), titleIndex).trim()
+          : null;
+      final emoji = previousText != null && emojiParser.count(previousText) > 0
+          ? emojiParser.parseEmojis(previousText).first
+          : null;
+      print('$previousText: $emoji');
+      return EpisodeLink(
+        title: title,
+        noteId: anchor.attributes['href']!.split('/').last.split('?').first,
+        emoji: emoji,
+      );
+    }).toList();
     chapterChildren.add(ChapterChild.episodeLinkGroup(
         EpisodeLinkGroup(groupName: groupName, links: links)));
-
-    before = node;
   });
 
   return Chapter(

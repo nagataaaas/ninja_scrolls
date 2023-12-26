@@ -24,13 +24,19 @@ class _ChapterSelectorViewState extends State<ChapterSelectorView> {
         future: fetchNoteBody(NoteIds.toc),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final result = parseChapters(snapshot.data!.html);
-            print("title: ${result.title}");
-            print("description: ${result.description}");
-            result.episodeLinkGroups.forEach((group) {
-              print("group: ${group.groupName}");
-              group.links.forEach((link) {
-                print("  link: ${link.title}(${link.noteId})");
+            parseChapters(snapshot.data!.html).forEach((result) {
+              print("title: ${result.title}");
+              print("description: ${result.description}");
+              result.chapterChildren.forEach((group) {
+                if (group.isEpisodeLinkGroup) {
+                  print("group: ${group.episodeLinkGroup!.groupName}");
+                  group.episodeLinkGroup!.links.forEach((link) {
+                    print(
+                        "  link: [${link.emoji}]${link.title}(${link.noteId})");
+                  });
+                } else {
+                  print("guide: ${group.guide!}");
+                }
               });
             });
             return Container();

@@ -20,5 +20,6 @@ Future<Note> fetchNoteBody(String id) async {
   var episode = Note.fromJson(json['data']);
   // saveEpisode(episode);
 
+  print('fetched $id');
   return episode;
 }
