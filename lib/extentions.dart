@@ -47,3 +47,12 @@ extension CaseEdit on String {
 extension ExistenceCheck on String? {
   String? get emptyToNull => this?.isEmpty ?? true ? null : this;
 }
+
+extension TextStyleExt on TextStyle? {
+  double? get lineHeightPixel {
+    if (this == null) return null;
+    if (this!.fontSize == null) return null;
+    if (this!.height == null) return this!.fontSize!;
+    return this!.fontSize! * this!.height!;
+  }
+}

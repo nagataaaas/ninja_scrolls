@@ -3,18 +3,63 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:ninja_scrolls/extentions.dart';
+import 'package:ninja_scrolls/navkey.dart';
 
-class LoadingScreen extends StatefulWidget {
+Future<bool> createThrowingShuriken(Completer<void> completer) async {
+  final Completer<bool> successCompleter = Completer<bool>();
+  bool popped = false;
+
+  showDialog<void>(
+    context: rootNavigatorKey.currentContext!,
+    builder: (context) {
+      return WillPopScope(
+        onWillPop: () async {
+          if (!successCompleter.isCompleted) successCompleter.complete(false);
+          if (!popped) {
+            popped = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          return true;
+        },
+        child: GestureDetector(
+            onTap: () {
+              if (!successCompleter.isCompleted) {
+                successCompleter.complete(false);
+              }
+              if (!popped) {
+                popped = true;
+                Navigator.of(context, rootNavigator: true).pop();
+              }
+            },
+            child: ThrowingShuriken(
+                completer: completer,
+                onAnimationFinished: () {
+                  if (!successCompleter.isCompleted) {
+                    successCompleter.complete(true);
+                  }
+                  if (!popped) {
+                    popped = true;
+                    Navigator.of(context, rootNavigator: true).pop();
+                  }
+                })),
+      );
+    },
+  );
+
+  return await successCompleter.future;
+}
+
+class ThrowingShuriken extends StatefulWidget {
   final Completer<void> completer;
   final Function? onAnimationFinished;
-  const LoadingScreen(
+  const ThrowingShuriken(
       {super.key, required this.completer, this.onAnimationFinished});
 
   @override
-  State<LoadingScreen> createState() => _LoadingScreenState();
+  State<ThrowingShuriken> createState() => _ThrowingShurikenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen>
+class _ThrowingShurikenState extends State<ThrowingShuriken>
     with TickerProviderStateMixin {
   late final AnimationController _slideInController;
   Animation<double>? _slideInAnimation;
@@ -57,7 +102,7 @@ class _LoadingScreenState extends State<LoadingScreen>
     );
 
     _loadingController = AnimationController(
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     )..addStatusListener((AnimationStatus status) {
         if (status == AnimationStatus.completed) {
@@ -166,100 +211,96 @@ class _LoadingScreenState extends State<LoadingScreen>
         ),
       ]).animate(_loadedShurikenController);
     }
-    return Scaffold(
-      body: AnimatedBuilder(
-        animation: _slideInController,
-        builder: (BuildContext context, Widget? child) {
-          return Transform.translate(
-            offset: Offset(_slideInAnimation!.value, 0),
-            child: child,
-          );
-        },
-        child: SizedBox(
-          height: context.screenHeight,
-          width: context.screenWidth,
-          child: Stack(
-            alignment: Alignment.centerRight,
-            children: [
-              SizedBox(
-                height: height,
-                width: armWidth,
-                child: Transform.translate(
-                  offset: Offset(armWidth * 0.7, 0),
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      AnimatedBuilder(
-                        animation: controller,
-                        child: Image.asset('assets/loading_arm.png',
-                            height: height),
+    return AnimatedBuilder(
+      animation: _slideInController,
+      builder: (BuildContext context, Widget? child) {
+        return Transform.translate(
+          offset: Offset(_slideInAnimation!.value, 0),
+          child: child,
+        );
+      },
+      child: SizedBox(
+        height: context.screenHeight,
+        width: context.screenWidth,
+        child: Stack(
+          alignment: Alignment.centerRight,
+          children: [
+            SizedBox(
+              height: height,
+              width: armWidth,
+              child: Transform.translate(
+                offset: Offset(armWidth * 0.7, 0),
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    AnimatedBuilder(
+                      animation: controller,
+                      child:
+                          Image.asset('assets/loading_arm.png', height: height),
+                      builder: (BuildContext context, Widget? child) {
+                        return Transform.rotate(
+                          alignment: Alignment.topLeft,
+                          origin: Offset(armWidth * 0.5, height * 0.85),
+                          angle: animation.value * lastAngle,
+                          child: child,
+                        );
+                      },
+                    ),
+                    AnimatedBuilder(
+                      animation: _loadedShurikenController,
+                      builder: (context, Widget? child) {
+                        return Transform.translate(
+                            offset: _loadedShurikenFlyAnimation?.value ??
+                                Offset.zero,
+                            child: child);
+                      },
+                      child: AnimatedBuilder(
+                        animation: shurikenController,
                         builder: (BuildContext context, Widget? child) {
                           return Transform.rotate(
                             alignment: Alignment.topLeft,
-                            origin: Offset(armWidth * 0.5, height * 0.85),
-                            angle: animation.value * lastAngle,
+                            origin: Offset(shurikenWidth * 0.5, height * 0.85),
+                            angle: shurikenAlongArmRotateAnimation.value *
+                                lastAngle,
                             child: child,
                           );
                         },
-                      ),
-                      AnimatedBuilder(
-                        animation: _loadedShurikenController,
-                        builder: (context, Widget? child) {
-                          return Transform.translate(
-                              offset: _loadedShurikenFlyAnimation?.value ??
-                                  Offset.zero,
-                              child: child);
-                        },
-                        child: AnimatedBuilder(
-                          animation: shurikenController,
-                          builder: (BuildContext context, Widget? child) {
-                            return Transform.rotate(
-                              alignment: Alignment.topLeft,
-                              origin:
-                                  Offset(shurikenWidth * 0.5, height * 0.85),
-                              angle: shurikenAlongArmRotateAnimation.value *
-                                  lastAngle,
-                              child: child,
-                            );
-                          },
-                          child: Transform.translate(
-                            offset: Offset(
-                                shurikenWidth * 0.95, -shurikenWidth * 0.23),
-                            child: AnimatedBuilder(
-                                animation: _loadedShurikenRotateController,
-                                child: Image.asset(
-                                    'assets/loading_shuriken.png',
-                                    width: shurikenWidth),
-                                builder: (context, Widget? child) {
-                                  return Transform.rotate(
-                                      angle: _loadedShurikenRotateController
-                                              .value *
-                                          math.pi *
-                                          -2,
-                                      child: child);
-                                }),
-                          ),
+                        child: Transform.translate(
+                          offset: Offset(
+                              shurikenWidth * 0.95, -shurikenWidth * 0.23),
+                          child: AnimatedBuilder(
+                              animation: _loadedShurikenRotateController,
+                              child: Image.asset('assets/loading_shuriken.png',
+                                  width: shurikenWidth),
+                              builder: (context, Widget? child) {
+                                return Transform.rotate(
+                                    angle:
+                                        _loadedShurikenRotateController.value *
+                                            math.pi *
+                                            -2,
+                                    child: child);
+                              }),
                         ),
                       ),
-                      AnimatedBuilder(
-                        animation: controller,
-                        child: Image.asset('assets/loading_thumb.png',
-                            width: armWidth),
-                        builder: (BuildContext context, Widget? child) {
-                          return Transform.rotate(
-                            alignment: Alignment.topLeft,
-                            origin: Offset(armWidth * 0.5, height * 0.85),
-                            angle: animation.value * lastAngle,
-                            child: child,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                    AnimatedBuilder(
+                      animation: controller,
+                      child: Image.asset('assets/loading_thumb.png',
+                          width: armWidth),
+                      builder: (BuildContext context, Widget? child) {
+                        return Transform.rotate(
+                          alignment: Alignment.topLeft,
+                          origin: Offset(armWidth * 0.5, height * 0.85),
+                          angle: animation.value * lastAngle,
+                          child: child,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
