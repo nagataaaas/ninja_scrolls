@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:http/http.dart' as http;
-
-import 'sqlite.dart';
+import 'package:ninja_scrolls/src/gateway/database/note.dart';
 
 // param: id
 // result: str
@@ -20,11 +19,8 @@ Future<Note> fetchNoteBody(String id, [bool useCache = true]) async {
     return jsonDecode(utf8.decode(value.bodyBytes));
   }));
 
-  log('fetched $id');
   var episode = Note.fromJson(json);
-  log('parsed $id');
   NoteGateway.save(episode);
-  log('saved $id');
 
   return episode;
 }

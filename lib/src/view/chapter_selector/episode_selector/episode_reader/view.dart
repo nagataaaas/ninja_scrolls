@@ -8,19 +8,23 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
+import 'package:html_unescape/html_unescape.dart';
 import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/navkey.dart';
+import 'package:ninja_scrolls/src/gateway/database/note.dart';
+import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
 import 'package:ninja_scrolls/src/gateway/note.dart';
-import 'package:ninja_scrolls/src/gateway/sqlite.dart';
 import 'package:ninja_scrolls/src/providers/index_provider.dart';
-import 'package:ninja_scrolls/src/providers/reader_provider.dart';
+import 'package:ninja_scrolls/src/providers/scaffold_provider.dart';
+import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/view.dart';
-import 'package:ninja_scrolls/src/view/components/loading_screen/throwing_shuriken.dart';
-import 'package:ninja_scrolls/src/view/scaffold/appbar_title_bloc.dart';
+import 'package:ninja_scrolls/src/view/components/loading_screen/create_loading_indicator_on_setting.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+final htmlUnescape = HtmlUnescape();
 
 class EpisodeReaderViewArgument {
   final int chapterId;
@@ -47,10 +51,8 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   bool hasNFiles = false;
   List<Widget>? _body;
   Map<String, GlobalKey> keys = {};
-  bool scrollControllerAttached = false;
   late final ScrollController scrollController = ScrollController(
     onAttach: (_) async {
-      scrollControllerAttached = true;
       restoreProgress();
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) saveCurrentProgress();
@@ -68,13 +70,13 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     super.initState();
     // after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      appBloc.updateTitle(episode.title);
+      context.read<ScaffoldProvider>().episodeTitle = episode.title;
 
       fetchNoteBody(episode.noteId).then((value) {
         if (!mounted) return;
         setState(() {
           note = value;
-          context.read<ReaderProvider>().endDrawer = buildEndDrawer();
+          context.read<ScaffoldProvider>().endDrawer = buildEndDrawer();
           document = html_parser.parse(value.html);
         });
       });
@@ -83,9 +85,11 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
   @override
   void dispose() {
-    EpisodeSelectorViewState state =
-        episodeSelectorKey.currentState as EpisodeSelectorViewState;
-    state.updateEpisodeStatus();
+    EpisodeSelectorViewState? state =
+        episodeSelectorKey.currentState as EpisodeSelectorViewState?;
+    if (state != null) {
+      state.updateEpisodeStatus();
+    }
     if (shellScaffoldKey.currentState?.isEndDrawerOpen == true) {
       shellScaffoldKey.currentState?.closeEndDrawer();
     }
@@ -109,9 +113,9 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   }
 
   void restoreProgress() {
-    if (!scrollControllerAttached) return;
-    // check scrollController is attached
-    if (scrollController.position.maxScrollExtent == 0.0) {
+    if (!scrollController.hasClients ||
+        !scrollController.position.hasContentDimensions ||
+        scrollController.position.maxScrollExtent == 0.0) {
       Future.delayed(const Duration(milliseconds: 100), () {
         if (!mounted) return;
         restoreProgress();
@@ -144,106 +148,113 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
   Widget buildEndDrawer() {
     if (!mounted) return Container();
-    return Drawer(
-      shape: RoundedRectangleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.only(
-            top: 8.0, right: 8.0, bottom: 16.0, left: 8.0),
-        child: SafeArea(
-          child: Column(children: [
-            Expanded(
-              child: SingleChildScrollView(
+    return Builder(builder: (context) {
+      context.watch<ThemeProvider>;
+      return Drawer(
+        shape: RoundedRectangleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.only(
+              top: 8.0, right: 8.0, bottom: 16.0, left: 8.0),
+          child: SafeArea(
+            child: Column(children: [
+              Expanded(
                 child: Scrollbar(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        title: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('目次',
-                                style: GoogleFonts.reggaeOne(
-                                    fontSize: context
-                                        .textTheme.headlineMedium!.fontSize)),
-                            IconButton(
-                                onPressed: () async {
-                                  context.read<ReaderProvider>().endDrawer =
-                                      buildEndDrawer();
-                                },
-                                icon: Icon(Icons.refresh))
-                          ],
-                        ),
-                      ),
-                      ...(note!.availableIndexItems.map((e) {
-                        return ListTile(
-                          title: Text(e.title),
-                          onTap: () {
-                            Scrollable.ensureVisible(
-                              keys[e.id]!.currentContext!,
-                              duration: const Duration(milliseconds: 500),
-                            );
-                          },
-                        );
-                      }).toList()),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            if (note?.bookPurchaseLink != null)
-              AspectRatio(
-                aspectRatio: 9 / 16 * 2,
-                child: GestureDetector(
-                  onTap: () async {
-                    final url = Uri.parse(note!.bookPurchaseLink!.url);
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url);
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 16.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        if (note!.bookPurchaseLink!.imageUrl != null) ...[
-                          Expanded(
-                              child: tryCacheImage(
-                                  note!.bookPurchaseLink!.imageUrl!)),
-                          SizedBox(width: 12),
-                        ],
-                        Expanded(
-                            child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              note!.bookPurchaseLink!.title,
-                              style: context.textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Text(note!.bookPurchaseLink!.price),
-                            Text('外部ページで購入')
-                          ],
-                        )),
+                        ListTile(
+                          title: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('目次',
+                                  style: GoogleFonts.reggaeOne(
+                                    fontSize: context
+                                        .textTheme.headlineMedium?.fontSize,
+                                    color:
+                                        context.textTheme.headlineMedium?.color,
+                                  )),
+                              IconButton(
+                                  onPressed: () async {
+                                    context.read<ScaffoldProvider>().endDrawer =
+                                        buildEndDrawer();
+                                  },
+                                  icon: Icon(Icons.refresh,
+                                      color: context.colorTheme.primary))
+                            ],
+                          ),
+                        ),
+                        ...(note!.availableIndexItems.map((e) {
+                          return ListTile(
+                            title: Text(e.title),
+                            onTap: () {
+                              Scrollable.ensureVisible(
+                                keys[e.id]!.currentContext!,
+                                duration: const Duration(milliseconds: 500),
+                              );
+                            },
+                          );
+                        }).toList()),
                       ],
                     ),
                   ),
                 ),
               ),
-            Row(
-              children: [
-                Expanded(child: previousButton),
-                SizedBox(
-                  width: 9,
+              if (note?.bookPurchaseLink != null)
+                AspectRatio(
+                  aspectRatio: 9 / 16 * 2,
+                  child: GestureDetector(
+                    onTap: () async {
+                      final url = Uri.parse(note!.bookPurchaseLink!.url);
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 16.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (note!.bookPurchaseLink!.imageUrl != null) ...[
+                            Expanded(
+                                child: tryCacheImage(
+                                    note!.bookPurchaseLink!.imageUrl!)),
+                            SizedBox(width: 12),
+                          ],
+                          Expanded(
+                              child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text(
+                                note!.bookPurchaseLink!.title,
+                                style: context.textTheme.bodyLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              Text(note!.bookPurchaseLink!.price),
+                              Text('外部ページで購入')
+                            ],
+                          )),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                Expanded(child: nextButton),
-              ],
-            ),
-          ]),
+              Row(
+                children: [
+                  Expanded(child: previousButton),
+                  SizedBox(
+                    width: 9,
+                  ),
+                  Expanded(child: nextButton),
+                ],
+              ),
+            ]),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   List<Widget> get body {
@@ -267,11 +278,12 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
           child: Text(
               textAlign: isCenter ? TextAlign.center : TextAlign.start,
               key: key,
-              element.innerHtml
+              htmlUnescape.convert(element.innerHtml
                   .replaceAll('<br>', '\n')
-                  .replaceAll(RegExp(r'<([a-z]+)( .+?)?>'), ''),
+                  .replaceAll(RegExp(r'<([a-z]+)( .+?)?>'), '')),
               style: GoogleFonts.reggaeOne(
-                fontSize: context.textTheme.headlineMedium!.fontSize,
+                fontSize: context.textTheme.headlineMedium?.fontSize,
+                color: context.textTheme.headlineMedium?.color,
               )),
         );
       } else if ((tags.difference(const {'p', 'br'})).isEmpty) {
@@ -281,12 +293,33 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
           child: Text(
               textAlign: isCenter ? TextAlign.center : TextAlign.start,
               key: key,
-              element.innerHtml
+              htmlUnescape.convert(element.innerHtml
                   .replaceAll('<br>', '\n')
-                  .replaceAll(RegExp(r'<([a-z]+)( .+?)?>'), '')),
+                  .replaceAll(RegExp(r'<([a-z]+)( .+?)?>'), ''))),
         );
       } else {
-        base = Html(key: key, data: element.innerHtml);
+        base = Html(
+          key: key,
+          data: element.outerHtml,
+          onLinkTap: ((url, renderContext, attributes, element) {
+            if (url == null) return;
+            final noteId = RegExp(r'n[0-9a-z]+', caseSensitive: false)
+                .matchAsPrefix(url.split('/').last)!
+                .group(0);
+            if (noteId == null) return;
+            final chapterId = context
+                .read<IndexProvider>()
+                .getChapterIdFromEpisodeNoteId(noteId);
+            if (chapterId == null) return;
+            GoRouter.of(context).goNamed(
+              Routes.toName(Routes.chaptersEpisodesReadRoute),
+              pathParameters: {
+                'chapterId': chapterId.toString(),
+                'episodeId': noteId
+              },
+            );
+          }),
+        );
       }
       if (isCenter && base is! Html) {
         return Row(
@@ -305,34 +338,32 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     _content ??= document!.body!.children.where((element) {
       if (hasNFiles && !note!.canReadAll) return false;
 
-      final innerHtml = element.innerHtml;
-      if (innerHtml.contains("連載時のログをそのままアーカイブ") ||
-          innerHtml.contains("収録された書籍限定エピソード")) {
+      final html = element.outerHtml;
+      if (html.contains("連載時のログをそのままアーカイブ") ||
+          html.contains("収録された書籍限定エピソード")) {
         // description
         return false;
       }
-      if (innerHtml.contains("nd9ea95a7fd60") ||
-          innerHtml.contains("全話リストへ戻る")) {
+      if (html.contains("nd9ea95a7fd60") || html.contains("全話リストへ戻る")) {
         // link
         return false;
       }
-      if (RegExp(r'n-?files?', caseSensitive: false).hasMatch(innerHtml)) {
+      if (RegExp(r'n-?files?', caseSensitive: false).hasMatch(html)) {
         hasNFiles = true;
         return note!.canReadAll;
       }
-      if (innerHtml.contains(RegExp(
-          r'href="https?://(www.)?amazon(.co)?(.jp)?/.+"',
+      if (html.contains(RegExp(r'href="https?://(www.)?amazon(.co)?(.jp)?/.+"',
           caseSensitive: false))) {
         // amazon link
         return false;
       }
-      if (innerHtml.contains(RegExp(r'href="https?://(www.)?mimicle(.com)?/.+"',
+      if (html.contains(RegExp(r'href="https?://(www.)?mimicle(.com)?/.+"',
           caseSensitive: false))) {
         // mimicle link (audio)
         return false;
       }
 
-      if (element.text.trim().isEmpty) return false;
+      if (!html.contains('<img') && element.text.trim().isEmpty) return false;
 
       return true;
     }).toList();
@@ -352,13 +383,19 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                     final completer = Completer<void>();
                     fetchNoteBody(previousEpisode!.noteId)
                         .then((_) => completer.complete());
-                    if (!await createThrowingShuriken(completer)) return;
+                    if (!mounted) return;
+                    if (!await createLoadingIndicatorOnSetting(
+                        context, completer)) return;
                   }
                   if (!mounted) return;
-                  GoRouter.of(context).pushReplacementNamed(
+                  GoRouter.of(context).goNamed(
                     Routes.toName(Routes.chaptersEpisodesReadRoute),
                     pathParameters: {
-                      'chapterId': widget.argument.chapterId.toString(),
+                      'chapterId': context
+                          .read<IndexProvider>()
+                          .getChapterIdFromEpisodeNoteId(
+                              previousEpisode!.noteId)!
+                          .toString(),
                       'episodeId': previousEpisode!.noteId
                     },
                   );
@@ -383,13 +420,19 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
               final completer = Completer<void>();
               fetchNoteBody(nextEpisode!.noteId)
                   .then((_) => completer.complete());
-              if (!await createThrowingShuriken(completer)) return;
+              if (!mounted) return;
+              if (!await createLoadingIndicatorOnSetting(context, completer)) {
+                return;
+              }
             }
             if (!mounted) return;
-            GoRouter.of(context).pushReplacementNamed(
+            GoRouter.of(context).goNamed(
               Routes.toName(Routes.chaptersEpisodesReadRoute),
               pathParameters: {
-                'chapterId': widget.argument.chapterId.toString(),
+                'chapterId': context
+                    .read<IndexProvider>()
+                    .getChapterIdFromEpisodeNoteId(nextEpisode!.noteId)!
+                    .toString(),
                 'episodeId': nextEpisode!.noteId
               },
             );
@@ -405,13 +448,27 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
+      body: Scrollbar(
         controller: scrollController,
-        child: Scrollbar(
+        interactive: true,
+        child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             children: [
               if (note?.eyecatchUrl != null)
-                CachedNetworkImage(imageUrl: note!.eyecatchUrl!),
+                AspectRatio(
+                    aspectRatio: 1280 / 670,
+                    child: CachedNetworkImage(
+                      imageUrl: note!.eyecatchUrl!,
+                      placeholder: (context, url) {
+                        return Container(
+                          color: context.colorTheme.background,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    )),
               Padding(
                 padding: EdgeInsets.symmetric(
                     horizontal: context.textTheme.bodyLarge!.lineHeightPixel!),

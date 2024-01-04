@@ -42,7 +42,7 @@ class IndexProvider extends ChangeNotifier {
     return null;
   }
 
-  int getChapterIdFromEpisodeNoteId(String noteId) {
+  int? getChapterIdFromEpisodeNoteId(String noteId) {
     final index = this.index;
     if (index == null) return -1;
     for (Chapter chapter in [...index.trilogy, ...index.aom]) {

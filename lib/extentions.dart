@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:settings_ui/settings_ui.dart';
 // Package imports:
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -46,6 +47,12 @@ extension CaseEdit on String {
 
 extension ExistenceCheck on String? {
   String? get emptyToNull => this?.isEmpty ?? true ? null : this;
+  String get nullToEmpty => this ?? '';
+  String? get parenthesize => this?.isNotEmpty ?? false ? '($this)' : null;
+  String? get katakanaized {
+    return this?.replaceAllMapped(RegExp("[ぁ-ゔ]"),
+        (Match m) => String.fromCharCode(m.group(0)!.codeUnitAt(0) + 0x60));
+  }
 }
 
 extension TextStyleExt on TextStyle? {
@@ -54,5 +61,21 @@ extension TextStyleExt on TextStyle? {
     if (this!.fontSize == null) return null;
     if (this!.height == null) return this!.fontSize!;
     return this!.fontSize! * this!.height!;
+  }
+}
+
+extension ThemeDataSettingsThemeDataExt on ThemeData {
+  SettingsThemeData get settingsThemeData {
+    return SettingsThemeData(
+      trailingTextColor: colorScheme.primary,
+      settingsListBackground: colorScheme.background,
+      settingsSectionBackground: colorScheme.background,
+      dividerColor: colorScheme.primary.withOpacity(0.7),
+      tileHighlightColor: colorScheme.primary.withOpacity(0.3),
+      titleTextColor: colorScheme.primary,
+      leadingIconsColor: colorScheme.primary,
+      tileDescriptionTextColor: colorScheme.primary.withOpacity(0.5),
+      settingsTileTextColor: colorScheme.primary,
+    );
   }
 }

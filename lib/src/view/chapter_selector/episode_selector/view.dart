@@ -5,14 +5,15 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ninja_scrolls/extentions.dart';
+import 'package:ninja_scrolls/src/gateway/database/note.dart';
+import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
 import 'package:ninja_scrolls/src/gateway/note.dart';
-import 'package:ninja_scrolls/src/gateway/sqlite.dart';
 import 'package:ninja_scrolls/src/providers/index_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
 import 'package:ninja_scrolls/src/static/colors.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
 import 'package:ninja_scrolls/src/view/components/episode_selector/build_chapter.dart';
-import 'package:ninja_scrolls/src/view/components/loading_screen/throwing_shuriken.dart';
+import 'package:ninja_scrolls/src/view/components/loading_screen/create_loading_indicator_on_setting.dart';
 import 'package:provider/provider.dart';
 
 class EpisodeSelectorViewArgument {
@@ -35,6 +36,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
   Key? lastChapterObjectKey;
   late List<EpisodeLink>? episodeLinks = chapter?.episodeLinks;
   Map<String, ReadStatus>? episodeStatus;
+  late final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -42,6 +44,12 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await updateEpisodeStatusIfNeeded();
     });
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> updateEpisodeStatusIfNeeded() async {
@@ -129,7 +137,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                 "body": Style(
                   fontFamily: "Noto Sans JP",
                   fontSize: FontSize(context.textTheme.bodyLarge!.fontSize!),
-                  color: context.colorTheme.primary,
+                  color: context.textTheme.bodyLarge?.color,
                 ),
               }),
             ],
@@ -170,8 +178,9 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                           horizontal: 8.0, vertical: 4.0),
                       child: Text(group.groupName!,
                           style: GoogleFonts.reggaeOne(
-                              fontSize:
-                                  context.textTheme.headlineSmall!.fontSize!)),
+                            fontSize: context.textTheme.headlineSmall?.fontSize,
+                            color: context.textTheme.headlineSmall?.color,
+                          )),
                     ),
                   ),
                 ),
@@ -208,9 +217,10 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                                             .fontSize! *
                                         2,
                                     child: Center(
-                                      child: Text(link.emoji ?? '',
-                                          style:
-                                              context.textTheme.headlineMedium),
+                                      child: Text(
+                                        link.emoji ?? '',
+                                        style: context.textTheme.headlineMedium,
+                                      ),
                                     ),
                                   ),
                                 Expanded(
@@ -247,17 +257,14 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
   }
 
   void open(EpisodeLink link) async {
-    if (episodeLinks == null) return null;
-    final index = episodeLinks!.indexOf(link);
-    if (index == -1) return;
-
     if (!await NoteGateway.isCached(link.noteId)) {
       final completer = Completer<void>();
       fetchNoteBody(link.noteId).then((_) => completer.complete());
-      if (!await createThrowingShuriken(completer)) return;
+      if (!mounted) return;
+      if (!await createLoadingIndicatorOnSetting(context, completer)) return;
     }
     if (!mounted) return;
-    GoRouter.of(context).pushNamed(
+    GoRouter.of(context).goNamed(
         Routes.toName(Routes.chaptersEpisodesReadRoute),
         pathParameters: {
           'chapterId': widget.argument.chapterId.toString(),
@@ -280,8 +287,10 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                 onRefresh: () async {
                   await updateEpisodeStatus();
                 },
-                child: SingleChildScrollView(
-                  child: Scrollbar(
+                child: Scrollbar(
+                  controller: scrollController,
+                  child: SingleChildScrollView(
+                    controller: scrollController,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -303,6 +312,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                               Icons.menu_book,
                               size:
                                   context.textTheme.bodyMedium!.fontSize! * 1.5,
+                              color: context.colorTheme.primary,
                             ),
                             SizedBox(width: 4),
                             Text("$totalEpisodeCount話",

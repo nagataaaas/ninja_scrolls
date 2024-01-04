@@ -4,7 +4,7 @@ import 'package:flutter_emoji/flutter_emoji.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
-import 'package:ninja_scrolls/src/gateway/sqlite.dart';
+import 'package:ninja_scrolls/src/gateway/database/note.dart';
 import 'package:ninja_scrolls/src/static/assets.dart';
 
 final emojiParser = EmojiParser();
@@ -146,6 +146,28 @@ class EpisodeLinkGroup {
       groupName,
       links.map((e) => e.encode()).toList(),
     ];
+  }
+}
+
+extension ChapterChildListExt on List<ChapterChild> {
+  List<EpisodeLink> get episodeLinks {
+    final List<EpisodeLink> links = [];
+    for (var child in this) {
+      if (child.isEpisodeLinkGroup) {
+        links.addAll(child.episodeLinkGroup!.links);
+      }
+    }
+    return links;
+  }
+}
+
+extension EpisodeLinkListExt on List<EpisodeLinkGroup> {
+  List<EpisodeLink> get episodeLinks {
+    final List<EpisodeLink> links = [];
+    for (var group in this) {
+      links.addAll(group.links);
+    }
+    return links;
   }
 }
 

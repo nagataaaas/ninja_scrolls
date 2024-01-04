@@ -1,5 +1,6 @@
 import 'package:animated_glitch/animated_glitch.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/providers/index_provider.dart';
@@ -10,7 +11,7 @@ import 'package:ninja_scrolls/src/transitions/path_animation.dart';
 import 'package:ninja_scrolls/src/view/components/episode_selector/build_chapter.dart';
 import 'package:provider/provider.dart';
 
-class ChapterSelectorView extends StatelessWidget {
+class ChapterSelectorView extends HookWidget {
   const ChapterSelectorView({super.key});
 
   Widget buildLabel(BuildContext context, String label) {
@@ -63,6 +64,7 @@ class ChapterSelectorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final index = context.watch<IndexProvider>().index;
+    final scrollContrller = useScrollController();
 
     return Scaffold(
       backgroundColor: context.colorTheme.background,
@@ -73,8 +75,10 @@ class ChapterSelectorView extends StatelessWidget {
                   onRefresh: () async {
                     // nothing to do
                   },
-                  child: SingleChildScrollView(
-                    child: Scrollbar(
+                  child: Scrollbar(
+                    controller: scrollContrller,
+                    child: SingleChildScrollView(
+                      controller: scrollContrller,
                       child: Column(children: [
                         buildLabel(context, 'TRILOGY'),
                         buildChapter(context, index.trilogy[0]),

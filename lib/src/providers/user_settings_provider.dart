@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ninja_scrolls/src/entities/user_settings.dart';
+import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 
 class UserSettingsProvider extends ChangeNotifier {
   UserSettings? _userSettings;
@@ -8,6 +9,8 @@ class UserSettingsProvider extends ChangeNotifier {
 
   ThemeType get themeType => userSettings.themeType;
   bool get richAnimationEnabled => userSettings.richAnimationEnabled;
+  DarkTheme get darkTheme => userSettings.darkTheme;
+  LightTheme get lightTheme => userSettings.lightTheme;
 
   Future<void> ensureInitialized() async {
     _userSettings ??= await UserSettings.load();
@@ -28,6 +31,18 @@ class UserSettingsProvider extends ChangeNotifier {
 
   set richAnimationEnabled(bool value) {
     _userSettings = userSettings.copyWith(richAnimationEnabled: value);
+    notifyListeners();
+    _userSettings!.save();
+  }
+
+  set darkTheme(DarkTheme value) {
+    _userSettings = userSettings.copyWith(darkTheme: value);
+    notifyListeners();
+    _userSettings!.save();
+  }
+
+  set lightTheme(LightTheme value) {
+    _userSettings = userSettings.copyWith(lightTheme: value);
     notifyListeners();
     _userSettings!.save();
   }
