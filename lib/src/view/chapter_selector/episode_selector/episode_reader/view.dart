@@ -34,6 +34,7 @@ import 'package:ninja_scrolls/src/view/components/loading_screen/create_loading_
 import 'package:provider/provider.dart';
 import 'package:ringo/ringo.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:widget_zoom/widget_zoom.dart';
 
 final htmlUnescape = HtmlUnescape();
 
@@ -77,7 +78,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       await cacheStrategy.fetch(() async {
         await Future.delayed(const Duration(milliseconds: 500));
         final next = getCenterItemIndex();
-        if (next == centerItemIndex || !mounted) return;
+        if (next == -1 || next == centerItemIndex || !mounted) return;
         setState(() {
           centerItemIndex = next;
         });
@@ -140,8 +141,9 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
   int getCenterItemIndex() {
     final listViewBox =
-        listViewKey.currentContext!.findRenderObject() as RenderBox?;
-    final listViewTop = listViewBox!.localToGlobal(Offset.zero).dy;
+        listViewKey.currentContext?.findRenderObject() as RenderBox?;
+    if (listViewBox == null) return 0;
+    final listViewTop = listViewBox.localToGlobal(Offset.zero).dy;
     final listViewBottom = listViewTop + listViewBox.size.height;
     final listViewCenter = listViewTop + listViewBox.size.height / 2;
 
@@ -216,9 +218,11 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   Widget tryCacheImage(String url) {
     if (url.isEmpty) return Container();
     if (url.endsWith('.svg')) {
-      return SvgPicture.network(url);
+      return WidgetZoom(
+          heroAnimationTag: url, zoomWidget: SvgPicture.network(url));
     }
-    return CachedNetworkImage(imageUrl: url);
+    return WidgetZoom(
+        heroAnimationTag: url, zoomWidget: CachedNetworkImage(imageUrl: url));
   }
 
   Widget buildEndDrawer() {
@@ -332,10 +336,50 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     });
   }
 
+  Html buildHtml(String html) {
+    return Html(
+      data: html,
+      style: {
+        'a[href^="wiki:"]': Style(
+          color: context.textTheme.bodyMedium?.color,
+          textDecoration: TextDecoration.underline,
+          textDecorationColor: context.colorTheme.background
+              .blend(context.colorTheme.primary, 0.5),
+          textDecorationThickness: 3,
+        )
+      },
+      onLinkTap: ((url, _, __) {
+        if (url == null) return;
+        if (url.startsWith('wiki:')) {
+          final page = WikiPage.fromJson(Uri.decodeComponent(url.substring(5)));
+          openWikiPage(page);
+          return;
+        }
+        final noteId = RegExp(r'n[0-9a-z]+', caseSensitive: false)
+            .matchAsPrefix(url.split('/').last)!
+            .group(0);
+        if (noteId == null) return;
+        final chapterId = context
+            .read<EpisodeIndexProvider>()
+            .getChapterIdbyEpisodeNoteId(noteId);
+        if (chapterId == null) return;
+        GoRouter.of(context).goNamed(
+          Routes.toName(Routes.chaptersEpisodesReadRoute),
+          pathParameters: {
+            'chapterId': chapterId.toString(),
+            'episodeId': noteId
+          },
+        );
+      }),
+    );
+  }
+
   Widget bodyAtIndex(int index, GlobalKey key) {
     final element = content[index];
     final isCenter =
-        element.attributes['style']?.contains('text-align: center') ?? false;
+        (element.attributes['style']?.contains('text-align: center') ??
+                false) ||
+            element.innerHtml.contains('text-align: center');
     keys[element.attributes['name'] ?? element.innerHtml] = key;
     final isShowingCenter = key == globalKeys[centerItemIndex];
 
@@ -343,11 +387,12 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         RegExp(r'<([a-z]+)( .+?)?>').allMatches(element.outerHtml).map((e) {
       return e.group(1)!;
     }).toSet();
+    tags.remove('figure');
 
     late Widget base;
     late final String body = htmlUnescape.convert(element.innerHtml
         .replaceAll('<br>', '\n')
-        .replaceAll(RegExp(r'<([a-z]+)( .+?)?>'), ''));
+        .replaceAll(RegExp(r'</?([a-z]+)( .+?)?>'), ''));
 
     if (tags.difference(const {'h2'}).isEmpty) {
       base = Padding(
@@ -408,7 +453,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
         base = RichText(
             textAlign: isCenter ? TextAlign.center : TextAlign.start,
-            textScaleFactor: MediaQuery.of(context).textScaleFactor,
+            textScaler: MediaQuery.of(context).textScaler,
             text:
                 TextSpan(children: spans, style: context.textTheme.bodyMedium));
       } else {
@@ -420,6 +465,50 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
             vertical: context.textTheme.bodyMedium!.lineHeightPixel! * 0.8),
         child: base,
       );
+    } else if (tags.intersection(const {'blockquote'}).isNotEmpty) {
+      base = Container(
+        color: context.colorTheme.background
+            .blend(context.colorTheme.primary, 0.1),
+        padding: EdgeInsets.all(
+            context.textTheme.bodyMedium!.lineHeightPixel! * 0.8),
+        child: Center(
+          child: Text(
+            textAlign: isCenter ? TextAlign.center : TextAlign.start,
+            body,
+            style: GoogleFonts.reggaeOne(
+              fontSize: context.textTheme.bodyMedium?.fontSize,
+              color: context.textTheme.bodyMedium?.color,
+            ),
+          ),
+        ),
+      );
+    } else if (tags.intersection(const {'img'}).isNotEmpty) {
+      final img = element.querySelector('img')!;
+      final url = img.attributes['src']!;
+      final caption = element.querySelector('figcaption')?.innerHtml;
+
+      if (caption == null) {
+        base = Padding(
+          padding: EdgeInsets.symmetric(
+              vertical: context.textTheme.bodyMedium.lineHeightPixel!),
+          child: tryCacheImage(url),
+        );
+      } else {
+        base = Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                  top: context.textTheme.bodyMedium.lineHeightPixel!),
+              child: tryCacheImage(url),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                  bottom: context.textTheme.bodyMedium.lineHeightPixel!),
+              child: buildHtml(caption),
+            ),
+          ],
+        );
+      }
     } else {
       final Map<String, WikiPage> wikiPageFilters =
           isShowingCenter ? filterWikiPages(body) : {};
@@ -435,42 +524,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
               return '<a href="wiki:${Uri.encodeComponent(page.toJson())}">$query</a>';
             })
           : element.outerHtml;
-      base = Html(
-        data: html,
-        style: {
-          'a[href^="wiki:"]': Style(
-            color: context.textTheme.bodyMedium?.color,
-            textDecoration: TextDecoration.underline,
-            textDecorationColor: context.colorTheme.background
-                .blend(context.colorTheme.primary, 0.5),
-            textDecorationThickness: 3,
-          )
-        },
-        onLinkTap: ((url, _, __) {
-          if (url == null) return;
-          if (url.startsWith('wiki:')) {
-            final page =
-                WikiPage.fromJson(Uri.decodeComponent(url.substring(5)));
-            openWikiPage(page);
-            return;
-          }
-          final noteId = RegExp(r'n[0-9a-z]+', caseSensitive: false)
-              .matchAsPrefix(url.split('/').last)!
-              .group(0);
-          if (noteId == null) return;
-          final chapterId = context
-              .read<EpisodeIndexProvider>()
-              .getChapterIdbyEpisodeNoteId(noteId);
-          if (chapterId == null) return;
-          GoRouter.of(context).goNamed(
-            Routes.toName(Routes.chaptersEpisodesReadRoute),
-            pathParameters: {
-              'chapterId': chapterId.toString(),
-              'episodeId': noteId
-            },
-          );
-        }),
-      );
+      base = buildHtml(html);
     }
     if (isCenter && base is! Html) {
       return Row(
@@ -606,12 +660,13 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     int result = 0;
     if (note?.eyecatchUrl != null) result++;
     if (document != null) result += content.length;
-    if (document != null && content.isEmpty) result++;
+    if (note != null && note!.remainedCharNum != 0) result++;
     result += 2;
     return result;
   }
 
-  Map<String, WikiPage> filterWikiPages(String text, {double matchRate = 0.7}) {
+  Map<String, WikiPage> filterWikiPages(String text,
+      {double matchRate = 0.65}) {
     if (text.length > 300) return {};
 
     final sentences = text.split(RegExp(r'[！「」、。？!?\n]')).map((e) => e.trim());
@@ -719,16 +774,14 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       }
       index -= content.length;
     }
-    if (document != null && content.isEmpty) {
+    if ((note?.remainedCharNum ?? 0) != 0) {
       if (--index < 0) {
-        return Center(
-          key: key,
-          child: Padding(
-            padding: const EdgeInsets.all(30.0),
-            child: Text(
-              "このエピソードの閲覧には、有料メンバーシップへの加入が必要です",
-              style: context.textTheme.headlineSmall,
-            ),
+        return Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
+          child: Text(
+            '残り${note?.remainedCharNum}文字のエピソードを読むには、有料メンバーシップへの加入が必要です',
+            style: context.textTheme.headlineSmall,
           ),
         );
       }
@@ -761,6 +814,8 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
   @override
   Widget build(BuildContext context) {
+    print(note?.remainedCharNum ?? 0);
+
     return Scaffold(
       body: Stack(
         alignment: Alignment.centerLeft,
