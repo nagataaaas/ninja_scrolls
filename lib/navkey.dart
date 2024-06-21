@@ -11,4 +11,5 @@ final GlobalKey<NavigatorState> settingShellNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'setting');
 
 final GlobalKey episodeSelectorKey = GlobalKey();
+final GlobalKey readHistoryKey = GlobalKey();
 final GlobalKey<ScaffoldState> shellScaffoldKey = GlobalKey<ScaffoldState>();

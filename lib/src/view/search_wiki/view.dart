@@ -5,6 +5,7 @@ import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/gateway/database/wiki.dart';
 import 'package:ninja_scrolls/src/gateway/wiki.dart';
 import 'package:ninja_scrolls/src/providers/scaffold_provider.dart';
+import 'package:ninja_scrolls/src/providers/wiki_index_provider.dart';
 import 'package:ninja_scrolls/src/static/colors.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
 import 'package:provider/provider.dart';
@@ -18,13 +19,11 @@ class SearchWikiView extends StatefulWidget {
 
 class _SearchWikiViewState extends State<SearchWikiView> {
   late final TextEditingController _searchTextController;
-  List<WikiPage> _recentAccessed = [];
-  List<WikiPage> _wikiPages = [];
   List<WikiPage> _searchResult = [];
   late final FocusNode searchTextFocusNode;
   late final ScrollController scrollController = ScrollController();
 
-  static const recentCount = 10;
+  late final readWikiIndexProvider = context.read<WikiIndexProvider>();
 
   @override
   void initState() {
@@ -33,16 +32,9 @@ class _SearchWikiViewState extends State<SearchWikiView> {
     _searchTextController = TextEditingController()
       ..addListener(onSearchQueryChanged);
 
-    WikiNetworkGateway.getPages().then((value) {
-      setState(() {
-        _wikiPages = value;
-      });
-    });
-    WikiPageTableGateway.recentAccessed(recentCount).then((value) {
-      setState(() {
-        _recentAccessed = value;
-      });
-    });
+    context.read<WikiIndexProvider>()
+      ..ensureRecentAccessedLoaded()
+      ..ensureWikiPagesLoaded();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       context.read<ScaffoldProvider>().wikiSearchAppBar = appBar;
@@ -64,13 +56,13 @@ class _SearchWikiViewState extends State<SearchWikiView> {
   }
 
   List<WikiPage> search(String query) {
-    if (_wikiPages.isEmpty) return [];
+    if (readWikiIndexProvider.wikiPages.isEmpty) return [];
     if (query.isEmpty) return [];
     final List<WikiPage> result = [];
 
-    query = query.replaceAll(RegExp('[・、]'), '').katakanaized!.toLowerCase();
+    query = WikiNetworkGateway.sanitizeForSearch(query);
 
-    for (final page in _wikiPages) {
+    for (final page in readWikiIndexProvider.wikiPages) {
       if (page.title
           .replaceAll(RegExp(r'[・、\s]'), '')
           .katakanaized!
@@ -131,20 +123,21 @@ class _SearchWikiViewState extends State<SearchWikiView> {
   }
 
   void open(WikiPage page) async {
-    WikiPageTableGateway.updateLastAccessedAt(page.title);
+    context.read<WikiIndexProvider>().updateLastAccessedAt(page.title);
 
-    WikiPageTableGateway.recentAccessed(recentCount).then((value) {
-      if (mounted) {
-        setState(() {
-          _recentAccessed = value;
-        });
-      }
-    });
-
-    if (!mounted) return;
     GoRouter.of(context).pushNamed(
       Routes.toName(Routes.searchWikiReadRoute),
       queryParameters: {'wikiTitle': page.title, 'wikiEndpoint': page.endpoint},
+    );
+  }
+
+  void searchOnWiki(String query) async {
+    final encoded = Uri.encodeComponent(query);
+    final endpoint = '?cmd=search&word=$encoded&type=AND';
+
+    GoRouter.of(context).pushNamed(
+      Routes.toName(Routes.searchWikiReadRoute),
+      queryParameters: {'wikiTitle': query, 'wikiEndpoint': endpoint},
     );
   }
 
@@ -164,6 +157,7 @@ class _SearchWikiViewState extends State<SearchWikiView> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2.0),
       child: Container(
+        alignment: Alignment.centerLeft,
         width: context.screenWidth,
         decoration: BoxDecoration(
           border: Border(
@@ -185,28 +179,40 @@ class _SearchWikiViewState extends State<SearchWikiView> {
     );
   }
 
-  Widget getWidgetAtIndex(int index) {
-    if (_recentAccessed.isNotEmpty && _searchTextController.text == "") {
+  Widget getWidgetAtIndex(
+      List<WikiPage> wikiPages, List<WikiPage> recentAccessed, int index) {
+    if (recentAccessed.isNotEmpty && _searchTextController.text == "") {
       if (index == 0) return listHeader('最近開いたページ');
       index -= 1;
-      if (index < _recentAccessed.length) {
-        return buildWikiPage(_recentAccessed[index]);
+      if (index < recentAccessed.length) {
+        return buildWikiPage(recentAccessed[index]);
       }
-      index -= _recentAccessed.length;
+      index -= recentAccessed.length;
     }
     if (index < 0) return Container();
     if (_searchTextController.text == "") {
       if (index == 0) return listHeader('ページ一覧');
       index -= 1;
-      if (index < _wikiPages.length) {
-        return buildWikiPage(_wikiPages[index]);
+      if (index < wikiPages.length) {
+        return buildWikiPage(wikiPages[index]);
       }
-      index -= _wikiPages.length;
+      index -= wikiPages.length;
       if (index < 0) return Container();
     }
     if (_searchTextController.text != "") {
       if (index == 0) return listHeader('検索結果');
       index -= 1;
+      if (_searchResult.isEmpty) {
+        return ListTile(
+          title: Text(
+            "Wiki内で「${_searchTextController.text}」を検索",
+            style: TextStyle(color: context.colorTheme.primary),
+          ),
+          onTap: () async {
+            searchOnWiki(_searchTextController.text);
+          },
+        );
+      }
       if (index < _searchResult.length) {
         return buildWikiPage(_searchResult[index]);
       }
@@ -215,44 +221,50 @@ class _SearchWikiViewState extends State<SearchWikiView> {
     return Container();
   }
 
-  int get itemCount {
+  int getItemCount(List<WikiPage> wikiPages, List<WikiPage> recentAccessed) {
     int count = 0;
-    if (_recentAccessed.isNotEmpty && _searchTextController.text == "") {
+    if (recentAccessed.isNotEmpty && _searchTextController.text == "") {
       count += 1;
-      count += _recentAccessed.length;
+      count += recentAccessed.length;
     }
     if (_searchTextController.text == "") {
       count += 1;
-      count += _wikiPages.length;
+      count += wikiPages.length;
     }
     if (_searchTextController.text != "") {
       count += 1;
-      count += _searchResult.length;
+      count += _searchResult.isEmpty ? 1 : _searchResult.length;
     }
     return count;
   }
 
   @override
   Widget build(BuildContext context) {
+    final recentAccessed = context.select(
+        (WikiIndexProvider wikiIndexProvider) =>
+            wikiIndexProvider.recentAccessed);
+    final wikiPages = context.select(
+        (WikiIndexProvider wikiIndexProvider) => wikiIndexProvider.wikiPages);
+
     return Scaffold(
         body: Scrollbar(
+            interactive: true,
             controller: scrollController,
             child: RefreshIndicator.adaptive(
               onRefresh: () async {
-                _wikiPages = await WikiNetworkGateway.getPages();
-                _recentAccessed =
-                    await WikiPageTableGateway.recentAccessed(recentCount);
                 setState(() {
                   _searchResult = search(_searchTextController.text);
                 });
               },
               child: ListView.builder(
                 controller: scrollController,
-                itemExtent: context.textTheme.bodyLarge!.lineHeightPixel! * 2,
-                itemCount: itemCount,
+                itemExtent: context.textTheme.bodyLarge!.lineHeightPixel! *
+                    3 *
+                    MediaQuery.of(context).textScaleFactor,
+                itemCount: getItemCount(wikiPages, recentAccessed),
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  return getWidgetAtIndex(index);
+                  return getWidgetAtIndex(wikiPages, recentAccessed, index);
                 },
               ),
             )));

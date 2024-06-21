@@ -10,9 +10,9 @@ import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
 import 'package:ninja_scrolls/src/gateway/database/sqlite.dart';
 import 'package:ninja_scrolls/src/gateway/database/wiki.dart';
 import 'package:ninja_scrolls/src/gateway/default_cache_manager_extention.dart';
-import 'package:ninja_scrolls/src/gateway/wiki.dart';
-import 'package:ninja_scrolls/src/providers/index_provider.dart';
+import 'package:ninja_scrolls/src/providers/episode_index_provider.dart';
 import 'package:ninja_scrolls/src/providers/theme_provider.dart';
+import 'package:ninja_scrolls/src/providers/wiki_index_provider.dart';
 import 'package:ninja_scrolls/src/static/note_ids.dart';
 import 'package:ninja_scrolls/src/view/components/show_platform_confirm_alert.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +38,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
       ? allTableCacheSize! + imageCacheSize!
       : null;
 
-  late final indexProvider = context.read<IndexProvider>();
+  late final indexProvider = context.read<EpisodeIndexProvider>();
   bool isIndexCacheLoading = true;
   DateTime? indexCachedAt;
   bool isWikiIndexCacheLoading = true;
@@ -145,10 +145,11 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                 onPressed: (context) async {
                   if (!await showPlatformConfirmAlert(
                       '閲覧状況データ削除${(readStateCacheSize?.formatByteSize()).parenthesize.nullToEmpty}',
-                      '全てのエピソードの閲覧状況がリセットされます。この処理はやりなおすことができません。')) {
+                      '全てのエピソードの閲覧状況・閲覧履歴がリセットされます。この処理はやりなおすことができません。')) {
                     return;
                   }
                   await ReadStateGateway.deleteAll();
+                  await NoteGateway.resetRecentReadAt();
                   reloadData();
                 },
                 trailing: Icon(Icons.delete_forever_outlined,
@@ -165,7 +166,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                       '全てのエピソードの見出し画像キャッシュが削除されます。')) {
                     return;
                   }
-                  DefaultCacheManager().emptyCache();
+                  await DefaultCacheManager().emptyCache();
                   reloadData();
                 },
                 trailing: Icon(Icons.delete_forever_outlined,
@@ -217,7 +218,8 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                   isWikiIndexCacheLoading = true;
                 });
                 await WikiPageTableGateway.deleteAll();
-                await WikiNetworkGateway.getPages(false);
+                if (!mounted) return;
+                await context.read<WikiIndexProvider>().refreshWikiPages();
                 reloadData();
 
                 if (!mounted) return;

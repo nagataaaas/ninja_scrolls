@@ -29,7 +29,7 @@ class DefaultCacheManagerExtention {
 
   Future<bool> databaseExists() async {
     if (Platform.isWindows || Platform.isLinux) {
-      sqflite_ffi.databaseFactoryFfi.databaseExists(_path);
+      return sqflite_ffi.databaseFactoryFfi.databaseExists(_path);
     }
     return databaseFactory.databaseExists(_path);
   }

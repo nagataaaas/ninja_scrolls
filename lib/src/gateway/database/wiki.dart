@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:ninja_scrolls/src/gateway/database/sqlite.dart';
 import 'package:ninja_scrolls/src/gateway/wiki.dart';
+import 'package:sqflite/sqflite.dart';
 
 class WikiPage {
   final String title;
+  final String sanitizedTitle;
   final String endpoint;
   WikiPage({
     required this.title,
+    required this.sanitizedTitle,
     required this.endpoint,
   });
 
@@ -14,7 +19,25 @@ class WikiPage {
   factory WikiPage.fromDatabase(Map<String, dynamic> json) {
     return WikiPage(
       title: json['title'] as String,
+      sanitizedTitle: json['title'] as String,
       endpoint: json['endpoint'] as String,
+    );
+  }
+
+  String toJson() {
+    return jsonEncode({
+      'title': title,
+      'sanitizedTitle': sanitizedTitle,
+      'endpoint': endpoint,
+    });
+  }
+
+  factory WikiPage.fromJson(String json) {
+    final map = jsonDecode(json) as Map<String, dynamic>;
+    return WikiPage(
+      title: map['title'] as String,
+      sanitizedTitle: map['sanitizedTitle'] as String,
+      endpoint: map['endpoint'] as String,
     );
   }
 }
@@ -26,6 +49,7 @@ class WikiPageTableGateway {
     return '''
       CREATE TABLE IF NOT EXISTS $tableName (
         title TEXT PRIMARY KEY,
+        sanitized_title TEXT NOT NULL,
         endpoint TEXT NOT NULL,
         last_accessed_at TEXT,
         created_at TEXT NOT NULL
@@ -56,6 +80,7 @@ class WikiPageTableGateway {
       'SELECT MAX(created_at) FROM $tableName',
     );
     if (result.isEmpty) return null;
+    if (result.first.values.first == null) return null;
     return DateTime.parse(result.first.values.first as String);
   }
 
@@ -64,11 +89,15 @@ class WikiPageTableGateway {
     final createdAt = DateTime.now().toIso8601String();
     await db!.transaction((txn) async {
       for (var page in pages) {
-        await txn.insert(tableName, {
-          'title': page.title,
-          'endpoint': page.endpoint,
-          'created_at': createdAt,
-        });
+        await txn.insert(
+            tableName,
+            {
+              'title': page.title,
+              'sanitized_title': page.sanitizedTitle,
+              'endpoint': page.endpoint,
+              'created_at': createdAt,
+            },
+            conflictAlgorithm: ConflictAlgorithm.ignore);
       }
     });
   }

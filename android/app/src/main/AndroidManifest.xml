@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.ninja_scrolls">
+    <uses-permission android:name="android.permission.INTERNET"/>
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
@@ -9,6 +10,7 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />
         </intent>
+        <package android:name="com.twitter.android" />
     </queries>
    <application
         android:label="ninja_scrolls"

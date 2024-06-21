@@ -1,5 +1,6 @@
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
+import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/gateway/database/wiki.dart';
 
 class WikiNetworkGateway {
@@ -57,8 +58,25 @@ class WikiNetworkGateway {
         : '$baseUrl$njslyrBaseUrl$endpoint';
   }
 
+  static List<String> splitTitle(String title) {
+    if (title.startsWith('「')) return [title];
+    if (title.contains('／')) return title.split('／');
+    return [title];
+  }
+
+  static String sanitizeForSearch(String title) {
+    return title
+        .replaceAll(RegExp(r'[！! <>＝=＜＞・、/／「」]'), '')
+        .katakanaized!
+        .toLowerCase();
+  }
+
+  static String sanitizeForCompare(String title) {
+    return title.replaceAll(RegExp(r'[！! <>＝=＜＞・、/／「」]'), '').toLowerCase();
+  }
+
   static Future<List<WikiPage>> getPages(
-      [bool useCache = true, bool useDatabase = true]) async {
+      {bool useCache = true, bool useDatabase = true}) async {
     if (!useCache || instance._pages == null) {
       if (useDatabase && await WikiPageTableGateway.isCached) {
         print('cached');
@@ -69,11 +87,23 @@ class WikiNetworkGateway {
         final links =
             document.querySelectorAll('#content > ul > li > ul > li > a');
         final List<WikiPage> pages = [];
+        final Map<String, int> titleCount = {};
         for (var link in links) {
           final title = link.text;
           final endpoint = link.attributes['href']!;
           if (isContentTitle(title)) {
-            pages.add(WikiPage(title: title, endpoint: getEndpoint(endpoint)));
+            for (var splittedTitle in splitTitle(title)) {
+              if (titleCount.containsKey(splittedTitle)) {
+                titleCount[splittedTitle] = titleCount[splittedTitle]! + 1;
+                splittedTitle = '$splittedTitle (${titleCount[splittedTitle]})';
+              } else {
+                titleCount[splittedTitle] = 1;
+              }
+              pages.add(WikiPage(
+                  title: splittedTitle,
+                  sanitizedTitle: sanitizeForSearch(splittedTitle),
+                  endpoint: getEndpoint(endpoint)));
+            }
           }
         }
         WikiPageTableGateway.save(pages);

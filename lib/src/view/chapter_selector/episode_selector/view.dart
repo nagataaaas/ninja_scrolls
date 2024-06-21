@@ -8,7 +8,7 @@ import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/gateway/database/note.dart';
 import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
 import 'package:ninja_scrolls/src/gateway/note.dart';
-import 'package:ninja_scrolls/src/providers/index_provider.dart';
+import 'package:ninja_scrolls/src/providers/episode_index_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
 import 'package:ninja_scrolls/src/static/colors.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
@@ -31,8 +31,9 @@ class EpisodeSelectorView extends StatefulWidget {
 }
 
 class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
-  late Chapter? chapter =
-      context.watch<IndexProvider>().getChapterById(widget.argument.chapterId);
+  late Chapter? chapter = context
+      .watch<EpisodeIndexProvider>()
+      .getChapterById(widget.argument.chapterId);
   Key? lastChapterObjectKey;
   late List<EpisodeLink>? episodeLinks = chapter?.episodeLinks;
   Map<String, ReadStatus>? episodeStatus;

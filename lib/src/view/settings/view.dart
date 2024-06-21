@@ -5,7 +5,7 @@ import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
-import 'package:ninja_scrolls/src/view/settings/components/app_version/view.dart';
+import 'package:ninja_scrolls/src/view/settings/components/app_info/view.dart';
 import 'package:ninja_scrolls/src/view/settings/components/data/view.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -25,7 +25,7 @@ class _SettingsViewState extends State<SettingsView> {
   void initState() {
     super.initState();
     _richAnimationEnabled =
-        context.read<UserSettingsProvider>().richAnimationEnabled;
+        context.read<UserSettingsProvider>().getRichAnimationEnabled(context);
   }
 
   @override
@@ -75,25 +75,23 @@ class _SettingsViewState extends State<SettingsView> {
                           GoRouter.of(context).go(Routes.settingThemeRoute);
                         },
                       ),
-                      SettingsTile.switchTile(
-                        onToggle: (value) {
-                          setState(() {
-                            _richAnimationEnabled = value;
-                          });
-                          context
-                              .read<UserSettingsProvider>()
-                              .richAnimationEnabled = value;
-                        },
-                        initialValue: _richAnimationEnabled,
+                      SettingsTile.navigation(
                         leading: Icon(Icons.animation),
                         title: Text('リッチアニメーション'),
+                        value: Text({null: 'OS設定に従う', true: 'する', false: 'しない'}[
+                            context
+                                .watch<UserSettingsProvider>()
+                                .rawRichAnimationEnabled]!),
+                        onPressed: (context) {
+                          GoRouter.of(context).go(Routes.settingAnimationRoute);
+                        },
                       ),
                     ],
                   ),
                 ],
               ),
               SettingsDataView(),
-              AppVersionView(),
+              AppInfoView(),
             ],
           ),
         ),

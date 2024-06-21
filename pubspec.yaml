@@ -42,7 +42,7 @@ dependencies:
   sqflite: ^2.2.6
   go_router: ^13.0.0
   google_fonts: ^6.1.0
-  flutter_html: ^3.0.0-alpha.6
+  flutter_html: ^3.0.0-beta.2
   flutter_emoji: ^2.5.1
   path_provider: ^2.1.1
   animated_glitch: ^2.0.0+2
@@ -55,7 +55,7 @@ dependencies:
   package_info_plus: ^4.2.0
   adaptive_theme: ^3.4.1
   cached_network_image: ^3.3.0
-  url_launcher: ^6.2.2
+  url_launcher: ^6.3.0
   flutter_svg: ^2.0.9
   html_unescape: ^2.0.0
   flutter_cache_manager: ^3.3.1
@@ -64,6 +64,8 @@ dependencies:
   webview_flutter: ^4.4.2
   webview_windows: ^0.3.0
   flutter_hooks: ^0.20.4
+  collection: ^1.17.2
+  ringo: ^0.0.2
 
 dev_dependencies:
   flutter_test:

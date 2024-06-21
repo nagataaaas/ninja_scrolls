@@ -46,7 +46,7 @@ class _HomeShellScaffoldState extends State<HomeShellScaffold> {
     return false;
   }
 
-  List<Widget>? get actions {
+  List<Widget>? get appBarActions {
     if (location == Routes.chaptersRoute ||
         location == Routes.chaptersEpisodesRoute) {
       return [
@@ -60,8 +60,24 @@ class _HomeShellScaffoldState extends State<HomeShellScaffold> {
     return null;
   }
 
+  Widget? get appBarLeading {
+    if (canPop) {
+      return IconButton(
+        icon: Icon(Icons.arrow_back_ios),
+        onPressed: () => GoRouter.of(context).pop(),
+      );
+    }
+    if (location == Routes.chaptersRoute) {
+      return IconButton(
+        icon: Icon(Icons.history),
+        onPressed: () => GoRouter.of(context)
+            .pushNamed(Routes.toName(Routes.readHistoryRoute)),
+      );
+    }
+    return null;
+  }
+
   AppBar get appBar {
-    print(location);
     if (location == Routes.searchEpisodeRoute) {
       final searchAppBar =
           context.watch<ScaffoldProvider>().episodeSearchAppBar;
@@ -79,7 +95,7 @@ class _HomeShellScaffoldState extends State<HomeShellScaffold> {
 
     return AppBar(
       elevation: 1,
-      actions: actions,
+      actions: appBarActions,
       title: Text(
         title,
         style: GoogleFonts.reggaeOne(
@@ -87,12 +103,7 @@ class _HomeShellScaffoldState extends State<HomeShellScaffold> {
           color: context.textTheme.headlineMedium?.color,
         ),
       ),
-      leading: canPop
-          ? IconButton(
-              icon: Icon(Icons.arrow_back_ios),
-              onPressed: () => GoRouter.of(context).pop(),
-            )
-          : null,
+      leading: appBarLeading,
       centerTitle: true,
     );
   }

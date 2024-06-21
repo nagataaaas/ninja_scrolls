@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:flutter_emoji/flutter_emoji.dart';
@@ -391,7 +392,9 @@ Chapter parseNeverDies(List<Element> nodes) {
 }
 
 Chapter parseAoM(List<Element> nodes, int chapterIndex) {
-  String title = nodes.first.innerHtml.split('：')[1].trim();
+  log(nodes.first.innerHtml, name: 'parseAoM');
+  String title = nodes.first.innerHtml;
+  title = title.contains('：') ? title.split('：')[1].trim() : '';
   if (title.endsWith('編')) {
     title = title.substring(0, title.length - 1);
   }
@@ -487,6 +490,9 @@ Chapter parseAoM(List<Element> nodes, int chapterIndex) {
       break;
     case 3:
       imagePath = Assets.bannersNjslyr4;
+      break;
+    case 4:
+      imagePath = Assets.bannersNjslyr5;
       break;
     default:
       imagePath = Assets.bannersNjslyr4;

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ninja_scrolls/extentions.dart';
-import 'package:ninja_scrolls/src/providers/index_provider.dart';
+import 'package:ninja_scrolls/src/providers/episode_index_provider.dart';
+import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
 import 'package:ninja_scrolls/src/static/assets.dart';
 import 'package:ninja_scrolls/src/static/colors.dart';
@@ -20,50 +21,56 @@ class ChapterSelectorView extends HookWidget {
       color: Common.white,
       fontSize: rem * 3,
     );
-    return Padding(
-      padding: EdgeInsets.only(bottom: 1),
-      child: AnimatedGlitch.shader(
-          speed: randomIntWithRange(30, 80).toDouble(),
-          child: Container(
+    final child = Container(
+      height: rem * 5,
+      width: context.screenWidth,
+      color: Common.black,
+      child: Stack(
+        alignment: Alignment.centerLeft,
+        children: [
+          SizedBox(
             height: rem * 5,
             width: context.screenWidth,
-            color: Common.black,
-            child: Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                SizedBox(
-                  height: rem * 5,
-                  width: context.screenWidth,
-                  child: Image.asset(Assets.bannersNinjaslayerLogo,
-                      fit: BoxFit.fill),
-                ),
-                Container(color: Common.black.withOpacity(0.5)),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Divider(
-                      color: Common.white,
-                      thickness: 2,
-                      height: 0,
-                    ),
-                    Text(label, style: textStyle),
-                    Divider(
-                      color: Common.white,
-                      thickness: 2,
-                      height: 0,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          )),
+            child: Image.asset(Assets.bannersNinjaslayerLogo, fit: BoxFit.fill),
+          ),
+          Container(color: Common.black.withOpacity(0.5)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Divider(
+                color: Common.white,
+                thickness: 2,
+                height: 0,
+              ),
+              Text(
+                label,
+                style: textStyle,
+                textScaleFactor: 1,
+              ),
+              Divider(
+                color: Common.white,
+                thickness: 2,
+                height: 0,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1),
+      child:
+          context.watch<UserSettingsProvider>().getRichAnimationEnabled(context)
+              ? AnimatedGlitch.shader(
+                  speed: randomIntWithRange(30, 80).toDouble(), child: child)
+              : child,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final index = context.watch<IndexProvider>().index;
+    final index = context.watch<EpisodeIndexProvider>().index;
     final scrollContrller = useScrollController();
 
     return Scaffold(

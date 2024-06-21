@@ -6,7 +6,7 @@ import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 enum ThemeType { auto, light, dark }
 
 class UserSettings {
-  final bool richAnimationEnabled;
+  final bool? richAnimationEnabled;
   final ThemeType themeType;
   final DarkTheme darkTheme;
   final LightTheme lightTheme;
@@ -55,7 +55,7 @@ class UserSettings {
   factory UserSettings.fromJson(String source) {
     final map = JsonDecoder().convert(source) as Map<String, dynamic>;
     return UserSettings(
-      richAnimationEnabled: map['richAnimationEnabled'] as bool,
+      richAnimationEnabled: map['richAnimationEnabled'] as bool?,
       themeType: ThemeType.values[map['themeType'] as int],
       darkTheme: DarkTheme.values.firstWhere(
         (element) => element.name == map['darkTheme'] as String?,

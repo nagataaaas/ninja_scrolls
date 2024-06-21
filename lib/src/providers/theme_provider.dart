@@ -157,7 +157,7 @@ class ThemeProvider extends ChangeNotifier {
 
   void ensureTextThemeInitialized(BuildContext context) {
     textTheme ??=
-        GoogleFonts.notoSansTextTheme(Theme.of(context).textTheme.copyWith(
+        GoogleFonts.notoSansJpTextTheme(Theme.of(context).textTheme.copyWith(
               headlineLarge: const TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w600,

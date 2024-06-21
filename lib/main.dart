@@ -4,22 +4,27 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ninja_scrolls/navkey.dart';
+import 'package:ninja_scrolls/route_observer.dart';
 import 'package:ninja_scrolls/src/entities/user_settings.dart';
 import 'package:ninja_scrolls/src/gateway/database/sqlite.dart';
 import 'package:ninja_scrolls/src/gateway/default_cache_manager_extention.dart';
-import 'package:ninja_scrolls/src/providers/index_provider.dart';
+import 'package:ninja_scrolls/src/providers/episode_index_provider.dart';
 import 'package:ninja_scrolls/src/providers/scaffold_provider.dart';
 import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
+import 'package:ninja_scrolls/src/providers/wiki_index_provider.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
 import 'package:ninja_scrolls/src/transitions/liquid_transition.dart';
+import 'package:ninja_scrolls/src/transitions/top_curtain_transition.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/episode_reader/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/view.dart';
+import 'package:ninja_scrolls/src/view/chapter_selector/read_history/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/view.dart';
 import 'package:ninja_scrolls/src/view/episode_search/view.dart';
 import 'package:ninja_scrolls/src/view/scaffold/home_shell_scaffold.dart';
 import 'package:ninja_scrolls/src/view/search_wiki/read/view.dart';
 import 'package:ninja_scrolls/src/view/search_wiki/view.dart';
+import 'package:ninja_scrolls/src/view/settings/animations/view.dart';
 import 'package:ninja_scrolls/src/view/settings/theme/view.dart';
 import 'package:ninja_scrolls/src/view/settings/view.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +46,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scaffoldProvider = ScaffoldProvider();
-    final indexProvider = IndexProvider()..loadIndex();
+    final episodeIndexProvider = EpisodeIndexProvider()..loadIndex();
     final themeProvider = ThemeProvider()..ensureTextThemeInitialized(context);
     final userSettingsProvider = UserSettingsProvider();
     userSettingsProvider.ensureInitialized().then(
@@ -49,12 +54,17 @@ class MyApp extends StatelessWidget {
         themeProvider.initializeWithUserSettings(userSettingsProvider);
       },
     );
+    final wikiIndexProvider = WikiIndexProvider()
+      ..ensureWikiPagesLoaded()
+      ..ensureRecentAccessedLoaded();
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => scaffoldProvider),
           ChangeNotifierProvider(create: (_) => userSettingsProvider),
-          ChangeNotifierProvider(create: (_) => indexProvider),
+          ChangeNotifierProvider(create: (_) => episodeIndexProvider),
           ChangeNotifierProvider(create: (_) => themeProvider),
+          ChangeNotifierProvider(create: (_) => themeProvider),
+          ChangeNotifierProvider(create: (_) => wikiIndexProvider),
         ],
         child: AdaptiveTheme(
           light: LightTheme.bright.theme,
@@ -85,12 +95,22 @@ final router = GoRouter(
       branches: [
         StatefulShellBranch(
           navigatorKey: readerShellNavigatorKey,
+          observers: [readShellRouteObserver],
           routes: [
             GoRoute(
               name: Routes.toName(Routes.chaptersRoute),
               path: Routes.chapters,
               builder: (context, state) => ChapterSelectorView(),
               routes: [
+                GoRoute(
+                  name: Routes.toName(Routes.readHistoryRoute),
+                  path: Routes.readHistory,
+                  pageBuilder: (context, state) => buildTopCurtainTransition(
+                      context: context,
+                      key: state.pageKey,
+                      name: state.name,
+                      child: ReadHistoryView(key: readHistoryKey)),
+                ),
                 GoRoute(
                     name: Routes.toName(Routes.chaptersEpisodesRoute),
                     path: Routes.chaptersEpisodes,
@@ -113,6 +133,7 @@ final router = GoRouter(
 
                           return buildLiquidTransitionPage(
                             context: context,
+                            name: state.name,
                             key: UniqueKey(),
                             child: EpisodeReaderView(
                                 key: UniqueKey(), argument: argument),
@@ -128,8 +149,10 @@ final router = GoRouter(
             GoRoute(
               name: Routes.toName(Routes.searchEpisode),
               path: Routes.searchEpisode,
-              pageBuilder: (context, state) =>
-                  CupertinoPage(child: EpisodeSearchView()),
+              pageBuilder: (context, state) => CupertinoPage(
+                  name: state.name,
+                  key: state.pageKey,
+                  child: EpisodeSearchView()),
             ),
           ],
         ),
@@ -152,6 +175,7 @@ final router = GoRouter(
 
                     return buildLiquidTransitionPage(
                       context: context,
+                      name: state.name,
                       key: UniqueKey(),
                       child: SearchWikiReadView(argument: argument),
                       transitionDuration: Duration(milliseconds: 700),
@@ -175,6 +199,11 @@ final router = GoRouter(
                     name: Routes.toName(Routes.settingThemeRoute),
                     path: Routes.settingTheme,
                     builder: (context, state) => SettingsThemeView(),
+                  ),
+                  GoRoute(
+                    name: Routes.toName(Routes.settingAnimationRoute),
+                    path: Routes.settingAnimation,
+                    builder: (context, state) => SettingsAnimationView(),
                   ),
                 ]),
           ],

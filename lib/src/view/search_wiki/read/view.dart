@@ -68,6 +68,7 @@ class _SearchWikiReadViewState extends State<SearchWikiReadView> {
                 webViewController!.canGoBack(),
                 webViewController!.canGoForward(),
               ]).then((values) {
+                if (!mounted) return;
                 setState(() {
                   navigatorAvailability =
                       NavigatorAvailability(values[0], values[1]);
@@ -75,7 +76,7 @@ class _SearchWikiReadViewState extends State<SearchWikiReadView> {
               });
             },
             onPageFinished: (String url) {
-              if (isInitialLoading) {
+              if (isInitialLoading && mounted) {
                 setState(() {
                   isInitialLoading = false;
                 });

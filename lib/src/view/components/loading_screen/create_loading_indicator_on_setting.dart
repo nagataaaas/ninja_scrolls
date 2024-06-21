@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 Future<bool> createLoadingIndicatorOnSetting(
     BuildContext context, Completer<void> completer) async {
-  if (context.read<UserSettingsProvider>().richAnimationEnabled) {
+  if (context.read<UserSettingsProvider>().getRichAnimationEnabled(context)) {
     return await createThrowingShuriken(completer);
   }
   return await createCircuarIndicator(completer);

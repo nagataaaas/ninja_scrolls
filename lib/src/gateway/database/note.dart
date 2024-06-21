@@ -12,6 +12,7 @@ class Note {
   final bool isPurchased;
   final BookPurchaseLink? bookPurchaseLink;
   final DateTime? cachedAt;
+  DateTime? recentReadAt;
 
   Note({
     required this.id,
@@ -24,6 +25,7 @@ class Note {
     required this.isPurchased,
     this.bookPurchaseLink,
     this.cachedAt,
+    this.recentReadAt,
   });
 
   bool get canReadAll => !isLimited || isPurchased;
@@ -75,6 +77,9 @@ class Note {
           ? null
           : BookPurchaseLink.fromDatabase(json['book_purchase_link'] as String),
       cachedAt: DateTime.parse(json['cached_at'] as String),
+      recentReadAt: json['recent_read_at'] == null
+          ? null
+          : DateTime.parse(json['recent_read_at'] as String),
     );
   }
 }
@@ -94,8 +99,10 @@ class NoteGateway {
         is_limited INTEGER NOT NULL,
         is_purchased INTEGER NOT NULL,
         book_purchase_link TEXT,
-        cached_at TEXT NOT NULL
-      )
+        cached_at TEXT NOT NULL,
+        recent_read_at TEXT
+      );
+      CREATE INDEX IF NOT EXISTS ${tableName}_recent_read_at ON $tableName (recent_read_at);
     ''';
   }
 
@@ -143,6 +150,7 @@ class NoteGateway {
             'is_purchased': note.isPurchased ? 1 : 0,
             'book_purchase_link': note.bookPurchaseLink?.encode(),
             'cached_at': DateTime.now().toIso8601String(),
+            'recent_read_at': note.recentReadAt?.toIso8601String(),
           },
           where: 'id = ?',
           whereArgs: [note.id]);
@@ -160,8 +168,23 @@ class NoteGateway {
       'is_purchased': note.isPurchased ? 1 : 0,
       'book_purchase_link': note.bookPurchaseLink?.encode(),
       'cached_at': DateTime.now().toIso8601String(),
+      'recent_read_at': note.recentReadAt?.toIso8601String(),
     });
     return true;
+  }
+
+  static Future<List<Note>> recentRead(int count) async {
+    var db = await DatabaseHelper.instance.database;
+    var result = await db!.query(tableName,
+        where: 'recent_read_at IS NOT NULL',
+        orderBy: 'recent_read_at DESC',
+        limit: count);
+    return result.map((e) => Note.fromDatabase(e)).toList();
+  }
+
+  static Future resetRecentReadAt() async {
+    var db = await DatabaseHelper.instance.database;
+    await db!.update(tableName, {'recent_read_at': null});
   }
 
   // argument

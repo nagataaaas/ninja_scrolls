@@ -8,7 +8,7 @@ import 'package:ninja_scrolls/src/gateway/database/episode_search_history.dart';
 import 'package:ninja_scrolls/src/gateway/database/note.dart';
 import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
 import 'package:ninja_scrolls/src/gateway/note.dart';
-import 'package:ninja_scrolls/src/providers/index_provider.dart';
+import 'package:ninja_scrolls/src/providers/episode_index_provider.dart';
 import 'package:ninja_scrolls/src/providers/scaffold_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
 import 'package:ninja_scrolls/src/static/colors.dart';
@@ -61,7 +61,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
   }
 
   Map<Chapter, List<EpisodeLink>> search(String query) {
-    final index = context.read<IndexProvider>().index;
+    final index = context.read<EpisodeIndexProvider>().index;
     if (query.isEmpty) return {};
     if (index == null) return {};
     final result = <Chapter, List<EpisodeLink>>{};
@@ -69,18 +69,15 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
     query = query.katakanaized!.replaceAll(RegExp('[・、]'), '');
 
     for (final chapter in [...index.trilogy, ...index.aom]) {
-      for (final chapterChild in chapter.chapterChildren) {
-        if (chapterChild.isGuide) continue;
-        for (final episodeLink in chapterChild.episodeLinkGroup!.links) {
-          if (episodeLink.title
-              .replaceAll(RegExp('[・、]'), '')
-              .katakanaized!
-              .contains(query)) {
-            if (!result.containsKey(chapter)) {
-              result[chapter] = [];
-            }
-            result[chapter]!.add(episodeLink);
+      for (EpisodeLink episodeLink in chapter.episodeLinks) {
+        if (episodeLink.title
+            .replaceAll(RegExp('[・、]'), '')
+            .katakanaized!
+            .contains(query)) {
+          if (!result.containsKey(chapter)) {
+            result[chapter] = [];
           }
+          result[chapter]!.add(episodeLink);
         }
       }
     }
@@ -153,8 +150,8 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
         Routes.toName(Routes.chaptersEpisodesReadRoute),
         pathParameters: {
           'chapterId': context
-              .read<IndexProvider>()
-              .getChapterIdFromEpisodeNoteId(link.noteId)!
+              .read<EpisodeIndexProvider>()
+              .getChapterIdbyEpisodeNoteId(link.noteId)!
               .toString(),
           'episodeId': link.noteId
         });

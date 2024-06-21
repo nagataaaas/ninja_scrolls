@@ -9,6 +9,7 @@ class Assets {
   static const String bannersNjslyr2 = 'assets/banners/njslyr_2.webp';
   static const String bannersNjslyr3 = 'assets/banners/njslyr_3.webp';
   static const String bannersNjslyr4 = 'assets/banners/njslyr_4.png';
+  static const String bannersNjslyr5 = 'assets/banners/njslyr_5.webp';
   static const String bannersNinjaslayerLogo =
       'assets/banners/ninjaslayer_logo.png';
 }

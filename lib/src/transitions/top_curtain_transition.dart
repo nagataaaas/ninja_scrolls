@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
-import 'package:ninja_scrolls/src/transitions/path_animation.dart';
 import 'package:provider/provider.dart';
 
-CustomTransitionPage<void> buildLiquidTransitionPage({
+CustomTransitionPage<void> buildTopCurtainTransition({
   required BuildContext context,
   required Widget child,
   Duration transitionDuration = const Duration(milliseconds: 300),
@@ -58,8 +57,6 @@ CustomTransitionPage<void> buildLiquidTransitionPage({
         });
   }
 
-  List<DripProgression>? dripProgressions;
-
   return CustomTransitionPage<void>(
     child: child,
     transitionDuration: transitionDuration,
@@ -75,26 +72,18 @@ CustomTransitionPage<void> buildLiquidTransitionPage({
     arguments: arguments,
     restorationId: restorationId,
     transitionsBuilder: (context, animation, secondaryAnimation, child1) {
-      dripProgressions ??= DripProgression.fromCount(
-          width: context.screenWidth, dripCount: context.screenWidth ~/ 20);
+      final screenHeight = context.screenHeight;
 
       return AnimatedBuilder(
         animation: animation,
         child: child1,
         builder: (context, child2) {
-          return Stack(
-            children: [
-              Opacity(opacity: animation.value > 0.5 ? 1 : 0, child: child2!),
-              Visibility(
-                  visible: animation.value != 0.0 && animation.value != 1.0,
-                  child: ClipPath(
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    clipper: PathAnimation(
-                        dripProgressions: dripProgressions!,
-                        move: animation.value),
-                    child: Container(color: Colors.red),
-                  ))
-            ],
+          return Transform.translate(
+            offset: Offset(
+              0,
+              -screenHeight * (1 - animation.value),
+            ),
+            child: child2,
           );
         },
       );

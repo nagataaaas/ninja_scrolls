@@ -8,7 +8,10 @@ class UserSettingsProvider extends ChangeNotifier {
   UserSettings get userSettings => _userSettings ?? UserSettings();
 
   ThemeType get themeType => userSettings.themeType;
-  bool get richAnimationEnabled => userSettings.richAnimationEnabled;
+  bool getRichAnimationEnabled(BuildContext context) =>
+      userSettings.richAnimationEnabled ??
+      MediaQuery.of(context).disableAnimations;
+  bool? get rawRichAnimationEnabled => userSettings.richAnimationEnabled;
   DarkTheme get darkTheme => userSettings.darkTheme;
   LightTheme get lightTheme => userSettings.lightTheme;
 
@@ -29,7 +32,7 @@ class UserSettingsProvider extends ChangeNotifier {
     _userSettings!.save();
   }
 
-  set richAnimationEnabled(bool value) {
+  set richAnimationEnabled(bool? value) {
     _userSettings = userSettings.copyWith(richAnimationEnabled: value);
     notifyListeners();
     _userSettings!.save();
