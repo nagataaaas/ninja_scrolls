@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
@@ -217,7 +219,7 @@ class ThemeProvider extends ChangeNotifier {
   void initializeWithUserSettings(UserSettingsProvider userSettingsProvider) {
     _darkTheme = userSettingsProvider.darkTheme;
     _lightTheme = userSettingsProvider.lightTheme;
-    print("dark: $_darkTheme, light: $_lightTheme");
+    log("dark: $_darkTheme, light: $_lightTheme");
     notifyListeners();
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:ninja_scrolls/extentions.dart';
@@ -79,7 +81,7 @@ class WikiNetworkGateway {
       {bool useCache = true, bool useDatabase = true}) async {
     if (!useCache || instance._pages == null) {
       if (useDatabase && await WikiPageTableGateway.isCached) {
-        print('cached');
+        log('cached');
         instance._pages = await WikiPageTableGateway.all;
       } else {
         final response = await http.get(Uri.parse(_listUrl));
