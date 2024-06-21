@@ -260,7 +260,7 @@ class _SearchWikiViewState extends State<SearchWikiView> {
                 controller: scrollController,
                 itemExtent: context.textTheme.bodyLarge!.lineHeightPixel! *
                     3 *
-                    MediaQuery.of(context).textScaleFactor,
+                    MediaQuery.of(context).textScaler.scale(1),
                 itemCount: getItemCount(wikiPages, recentAccessed),
                 shrinkWrap: true,
                 itemBuilder: (context, index) {

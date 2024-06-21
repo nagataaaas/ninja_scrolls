@@ -46,7 +46,7 @@ class ChapterSelectorView extends HookWidget {
               Text(
                 label,
                 style: textStyle,
-                textScaleFactor: 1,
+                textScaler: TextScaler.linear(1),
               ),
               Divider(
                 color: Common.white,

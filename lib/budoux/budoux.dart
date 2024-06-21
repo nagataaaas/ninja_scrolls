@@ -100,7 +100,7 @@ class BudouX {
             textDirection: textDirection,
             softWrap: softWrap,
             overflow: overflow,
-            textScaleFactor: textScaleFactor,
+            textScaler: TextScaler.linear(textScaleFactor ?? 1),
             maxLines: maxLines,
             semanticsLabel: semanticsLabel,
             textWidthBasis: textWidthBasis,

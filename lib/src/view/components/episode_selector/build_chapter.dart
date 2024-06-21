@@ -50,7 +50,7 @@ Widget buildChapter(BuildContext context, Chapter chapter,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(chapter.title.split('：').first,
-                          textScaleFactor: 1,
+                          textScaler: TextScaler.linear(1),
                           style: textStyle.copyWith(
                               fontSize: textStyle.fontSize! * 0.9)),
                     ),
@@ -60,7 +60,7 @@ Widget buildChapter(BuildContext context, Chapter chapter,
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        textScaleFactor: 1,
+                        textScaler: TextScaler.linear(1),
                         chapter.title.split('：')[1].trim(),
                         textAlign: TextAlign.right,
                         style: textStyle,

@@ -18,14 +18,11 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  bool _richAnimationEnabled = true;
   late final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _richAnimationEnabled =
-        context.read<UserSettingsProvider>().getRichAnimationEnabled(context);
   }
 
   @override
@@ -59,18 +56,21 @@ class _SettingsViewState extends State<SettingsView> {
                     .settingsThemeData,
                 sections: [
                   SettingsSection(
-                    title: Text('視覚設定'),
+                    title: Text('視覚設定', style: context.textTheme.bodyMedium),
                     tiles: <SettingsTile>[
                       SettingsTile.navigation(
                         leading: Icon(Icons.contrast),
-                        title: Text('テーマ'),
-                        value: Text({
-                          AdaptiveThemeMode.system: 'OS設定に従う',
-                          AdaptiveThemeMode.light:
-                              'ライト (${context.watch<ThemeProvider>().lightTheme.name})',
-                          AdaptiveThemeMode.dark:
-                              'ダーク (${context.watch<ThemeProvider>().darkTheme.name})'
-                        }[AdaptiveTheme.of(context).mode]!),
+                        title:
+                            Text('テーマ', style: context.textTheme.headlineSmall),
+                        value: Text(
+                            {
+                              AdaptiveThemeMode.system: 'OS設定に従う',
+                              AdaptiveThemeMode.light:
+                                  'ライト (${context.watch<ThemeProvider>().lightTheme.name})',
+                              AdaptiveThemeMode.dark:
+                                  'ダーク (${context.watch<ThemeProvider>().darkTheme.name})'
+                            }[AdaptiveTheme.of(context).mode]!,
+                            style: context.textTheme.bodyMedium),
                         onPressed: (context) {
                           GoRouter.of(context).go(Routes.settingThemeRoute);
                         },
