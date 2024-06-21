@@ -114,7 +114,6 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
 
     for (var episodeLink in episodeLinks!) {
       final status = episodeStatus![episodeLink.noteId];
-      print([episodeLink.title, status?.state, status?.readProgress]);
       if (status == null) continue;
       if (status.state != ReadState.read) return episodeLink;
     }

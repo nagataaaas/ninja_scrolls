@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -647,13 +648,6 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
           if (currentResult.isEmpty) break;
           final preferredResult = currentResult.last;
 
-          print([
-            token,
-            result?.matchRate,
-            currentToken,
-            preferredResult.matchRate,
-          ]);
-
           if (result == null || result.score <= preferredResult.score) {
             result = preferredResult;
             token = currentToken;
@@ -713,7 +707,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         return SelectionArea(
           key: key,
           onSelectionChanged: (value) {
-            print(value?.plainText);
+            log(value?.plainText ?? '');
           },
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -779,7 +773,6 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                 controller: scrollController,
                 itemCount: widgetCount,
                 itemBuilder: (context, index) {
-                  print('build');
                   return widgetAtIndex(
                       index, BoxConstraints(maxHeight: context.screenHeight));
                 }),

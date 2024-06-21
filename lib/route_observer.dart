@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/widgets.dart';
 
 final MyNavigatorObserver readShellRouteObserver = MyNavigatorObserver();
@@ -19,10 +21,10 @@ class MyNavigatorObserver extends NavigatorObserver {
     } else {
       previous = previousRoute.settings.name;
     }
-    print(route.settings.toString());
-    print('push: Current:${route.settings.name}  Previous:$previous');
+    log(route.settings.toString());
+    log('push: Current:${route.settings.name}  Previous:$previous');
     _history.add(route);
-    print(_history.map((e) => e.settings.name).toList());
+    log(_history.map((e) => e.settings.name).toList().toString());
   }
 
   @override
@@ -35,8 +37,8 @@ class MyNavigatorObserver extends NavigatorObserver {
     } else {
       previous = previousRoute.settings.name!;
     }
-    print('pop: Current:${route.settings.name}  Previous:$previous');
+    log('pop: Current:${route.settings.name}  Previous:$previous');
     _history.remove(route);
-    print(_history.map((e) => e.settings.name).toList());
+    log(_history.map((e) => e.settings.name).toList().toString());
   }
 }
