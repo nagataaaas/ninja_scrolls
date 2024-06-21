@@ -136,14 +136,14 @@ class ReadHistoryViewState extends State<ReadHistoryView> {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Container(
         width: context.screenWidth,
-        color: context.colorTheme.background,
+        color: context.colorTheme.surface,
         child: Column(
           children: [
             FilledButton(
               style: ButtonStyle(
                 padding: MaterialStatePropertyAll(EdgeInsets.zero),
                 backgroundColor:
-                    MaterialStateProperty.all(context.colorTheme.background),
+                    MaterialStateProperty.all(context.colorTheme.surface),
                 shape: MaterialStateProperty.all(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(1))),
               ),
@@ -185,7 +185,7 @@ class ReadHistoryViewState extends State<ReadHistoryView> {
                   flex: 100 - (readProgress(episodeLink) * 100).toInt(),
                   child: Container(
                       height: 2,
-                      color: context.colorTheme.background
+                      color: context.colorTheme.surface
                           .blend(context.colorTheme.primary, 0.1)))
             ]),
           ],

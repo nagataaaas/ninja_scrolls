@@ -81,7 +81,7 @@ class _SearchWikiViewState extends State<SearchWikiView> {
         height: 40,
         width: double.maxFinite,
         decoration: BoxDecoration(
-            color: context.colorTheme.background.blend(Color(0xFF7F7F7F), 0.3),
+            color: context.colorTheme.surface.blend(Color(0xFF7F7F7F), 0.3),
             borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.only(left: 15),
@@ -97,8 +97,8 @@ class _SearchWikiViewState extends State<SearchWikiView> {
                   isCollapsed: true,
                   contentPadding: EdgeInsets.zero,
                   border: InputBorder.none,
-                  fillColor: context.colorTheme.background
-                      .blend(Color(0xFF7F7F7F), 0.3),
+                  fillColor:
+                      context.colorTheme.surface.blend(Color(0xFF7F7F7F), 0.3),
                   hintText: "ページ名で検索",
                   hintStyle: TextStyle(
                     color: context.colorTheme.primary
@@ -116,8 +116,7 @@ class _SearchWikiViewState extends State<SearchWikiView> {
       ),
       shape: Border(
           bottom: BorderSide(
-              color:
-                  context.colorTheme.background.blend(Color(0xFF7F7F7F), 0.3),
+              color: context.colorTheme.surface.blend(Color(0xFF7F7F7F), 0.3),
               width: 1)),
     );
   }

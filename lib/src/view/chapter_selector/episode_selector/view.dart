@@ -189,14 +189,14 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Container(
                     width: context.screenWidth,
-                    color: context.colorTheme.background,
+                    color: context.colorTheme.surface,
                     child: Column(
                       children: [
                         FilledButton(
                           style: ButtonStyle(
                             padding: MaterialStatePropertyAll(EdgeInsets.zero),
                             backgroundColor: MaterialStateProperty.all(
-                                context.colorTheme.background),
+                                context.colorTheme.surface),
                             shape: MaterialStateProperty.all(
                                 RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(1))),
@@ -242,7 +242,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                               flex: 100 - (readProgress(link) * 100).toInt(),
                               child: Container(
                                   height: 2,
-                                  color: context.colorTheme.background
+                                  color: context.colorTheme.surface
                                       .blend(context.colorTheme.primary, 0.1)))
                         ]),
                       ],
@@ -277,7 +277,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
     updateEpisodeStatusIfNeeded();
 
     return Scaffold(
-      backgroundColor: context.colorTheme.background,
+      backgroundColor: context.colorTheme.surface,
       body: SafeArea(
         child: chapter == null
             ? Center(
@@ -358,7 +358,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                           child: FilledButton(
                               style: ButtonStyle(
                                 backgroundColor: MaterialStateProperty.all(
-                                    context.colorTheme.background.blend(
+                                    context.colorTheme.surface.blend(
                                         context.colorTheme.primary, 0.1)),
                                 shape: MaterialStateProperty.all(
                                     RoundedRectangleBorder(

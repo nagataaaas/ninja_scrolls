@@ -39,7 +39,7 @@ Widget buildChapter(BuildContext context, Chapter chapter,
               width: context.screenWidth,
               child: Image.asset(chapter.imagePath, fit: BoxFit.contain),
             ),
-            Container(color: context.colorTheme.background.withOpacity(0.8)),
+            Container(color: context.colorTheme.surface.withOpacity(0.8)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: rem / 2),
               child: Column(

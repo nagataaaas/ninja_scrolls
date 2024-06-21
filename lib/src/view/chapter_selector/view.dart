@@ -74,7 +74,7 @@ class ChapterSelectorView extends HookWidget {
     final scrollContrller = useScrollController();
 
     return Scaffold(
-      backgroundColor: context.colorTheme.background,
+      backgroundColor: context.colorTheme.surface,
       body: SafeArea(
           child: (index == null)
               ? Center(child: CircularProgressIndicator.adaptive())

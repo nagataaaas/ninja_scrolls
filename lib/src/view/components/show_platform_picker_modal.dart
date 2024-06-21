@@ -27,7 +27,7 @@ Future<T?> showCupertinoPicker<T>(
         child: Stack(
           children: [
             CupertinoPicker(
-              backgroundColor: context.colorTheme.background,
+              backgroundColor: context.colorTheme.surface,
               scrollController:
                   FixedExtentScrollController(initialItem: initialIndex),
               itemExtent: 40,

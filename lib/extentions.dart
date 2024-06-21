@@ -68,8 +68,8 @@ extension ThemeDataSettingsThemeDataExt on ThemeData {
   SettingsThemeData get settingsThemeData {
     return SettingsThemeData(
       trailingTextColor: colorScheme.primary,
-      settingsListBackground: colorScheme.background,
-      settingsSectionBackground: colorScheme.background,
+      settingsListBackground: colorScheme.surface,
+      settingsSectionBackground: colorScheme.surface,
       dividerColor: colorScheme.primary.withOpacity(0.7),
       tileHighlightColor: colorScheme.primary.withOpacity(0.3),
       titleTextColor: colorScheme.primary,

@@ -343,8 +343,8 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         'a[href^="wiki:"]': Style(
           color: context.textTheme.bodyMedium?.color,
           textDecoration: TextDecoration.underline,
-          textDecorationColor: context.colorTheme.background
-              .blend(context.colorTheme.primary, 0.5),
+          textDecorationColor:
+              context.colorTheme.surface.blend(context.colorTheme.primary, 0.5),
           textDecorationThickness: 3,
         )
       },
@@ -433,7 +433,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
               text: query,
               style: TextStyle(
                 decoration: TextDecoration.underline,
-                decorationColor: context.colorTheme.background
+                decorationColor: context.colorTheme.surface
                     .blend(context.colorTheme.primary, 0.5),
                 decorationThickness: 3,
               ),
@@ -467,8 +467,8 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       );
     } else if (tags.intersection(const {'blockquote'}).isNotEmpty) {
       base = Container(
-        color: context.colorTheme.background
-            .blend(context.colorTheme.primary, 0.1),
+        color:
+            context.colorTheme.surface.blend(context.colorTheme.primary, 0.1),
         padding: EdgeInsets.all(
             context.textTheme.bodyMedium!.lineHeightPixel! * 0.8),
         child: Center(
@@ -747,7 +747,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                 imageUrl: note!.eyecatchUrl!,
                 placeholder: (context, url) {
                   return Container(
-                    color: context.colorTheme.background,
+                    color: context.colorTheme.surface,
                     child: Center(
                       child: CircularProgressIndicator(),
                     ),

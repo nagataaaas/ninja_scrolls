@@ -16,7 +16,7 @@ Map<ThemeMixin, ThemeData> themes = {
   LightTheme.bright: ThemeData(
     useMaterial3: true,
     colorScheme: const ColorScheme.light(
-      background: colors.Common.white,
+      surface: colors.Common.white,
       primary: colors.Common.black,
       onPrimary: colors.Common.white,
       secondary: colors.Common.grey2,
@@ -37,7 +37,7 @@ Map<ThemeMixin, ThemeData> themes = {
       foregroundColor: colors.Common.dark,
     ),
     colorScheme: const ColorScheme.light(
-      background: colors.Common.dustMilk,
+      surface: colors.Common.dustMilk,
       primary: colors.Common.dark,
       onPrimary: colors.Common.dustMilk,
       secondary: colors.Common.grey1,
@@ -67,7 +67,7 @@ Map<ThemeMixin, ThemeData> themes = {
   DarkTheme.black: ThemeData(
     useMaterial3: true,
     colorScheme: const ColorScheme.dark(
-      background: colors.Common.black,
+      surface: colors.Common.black,
       primary: colors.Common.white,
       onPrimary: colors.Common.black,
       secondary: colors.Common.grey3,

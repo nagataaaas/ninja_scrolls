@@ -94,8 +94,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
             height: 40,
             width: double.maxFinite,
             decoration: BoxDecoration(
-                color:
-                    context.colorTheme.background.blend(Color(0xFF7F7F7F), 0.3),
+                color: context.colorTheme.surface.blend(Color(0xFF7F7F7F), 0.3),
                 borderRadius: BorderRadius.circular(20)),
             child: Padding(
               padding: const EdgeInsets.only(left: 15),
@@ -110,7 +109,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
                     isCollapsed: true,
                     contentPadding: EdgeInsets.zero,
                     border: InputBorder.none,
-                    fillColor: context.colorTheme.background
+                    fillColor: context.colorTheme.surface
                         .blend(Color(0xFF7F7F7F), 0.3),
                     hintText: "タイトルで検索",
                     hintStyle: TextStyle(
@@ -128,8 +127,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
           )),
       shape: Border(
           bottom: BorderSide(
-              color:
-                  context.colorTheme.background.blend(Color(0xFF7F7F7F), 0.3),
+              color: context.colorTheme.surface.blend(Color(0xFF7F7F7F), 0.3),
               width: 1)),
       leading: IconButton(
           icon: Icon(Icons.arrow_back_ios,
@@ -280,14 +278,14 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Container(
                     width: context.screenWidth,
-                    color: context.colorTheme.background,
+                    color: context.colorTheme.surface,
                     child: Column(
                       children: [
                         FilledButton(
                           style: ButtonStyle(
                             padding: MaterialStatePropertyAll(EdgeInsets.zero),
                             backgroundColor: MaterialStateProperty.all(
-                                context.colorTheme.background),
+                                context.colorTheme.surface),
                             shape: MaterialStateProperty.all(
                                 RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(1))),
@@ -343,7 +341,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
                               flex: 100 - (readProgress(link) * 100).toInt(),
                               child: Container(
                                   height: 2,
-                                  color: context.colorTheme.background
+                                  color: context.colorTheme.surface
                                       .blend(context.colorTheme.primary, 0.1)))
                         ]),
                       ],
