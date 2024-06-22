@@ -1,41 +1,36 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:ninja_scrolls/navkey.dart';
 
-Future<bool> createCircuarIndicator(Completer<void> completer) async {
+Future<bool> createCircuarIndicator(
+    BuildContext context, Completer<void> completer) async {
   if (completer.isCompleted) return true;
   final Completer<bool> successCompleter = Completer<bool>();
   bool popped = false;
 
+  void ensurePopped(BuildContext context) {
+    if (!popped) {
+      popped = true;
+      Navigator.of(context).pop();
+    }
+  }
+
   showDialog<void>(
-    context: rootNavigatorKey.currentContext!,
+    context: context,
+    barrierDismissible: true,
     builder: (context) {
-      completer.future.then((value) {
-        if (!successCompleter.isCompleted) successCompleter.complete(true);
-        if (!popped) {
-          popped = true;
-          Navigator.of(context, rootNavigator: true).pop();
-        }
-      });
-      return WillPopScope(
-        onWillPop: () async {
+      return PopScope(
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
           if (!successCompleter.isCompleted) successCompleter.complete(false);
-          if (!popped) {
-            popped = true;
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          return true;
+          ensurePopped(context);
         },
         child: GestureDetector(
             onTap: () {
               if (!successCompleter.isCompleted) {
                 successCompleter.complete(false);
               }
-              if (!popped) {
-                popped = true;
-                Navigator.of(context, rootNavigator: true).pop();
-              }
+              ensurePopped(context);
             },
             child: Center(child: CircularProgressIndicator.adaptive())),
       );

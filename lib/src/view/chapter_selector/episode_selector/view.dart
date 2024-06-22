@@ -194,10 +194,10 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                       children: [
                         FilledButton(
                           style: ButtonStyle(
-                            padding: MaterialStatePropertyAll(EdgeInsets.zero),
-                            backgroundColor: MaterialStateProperty.all(
+                            padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                            backgroundColor: WidgetStateProperty.all(
                                 context.colorTheme.surface),
-                            shape: MaterialStateProperty.all(
+                            shape: WidgetStateProperty.all(
                                 RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(1))),
                           ),
@@ -326,9 +326,9 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                               horizontal: 8.0, vertical: 4.0),
                           child: FilledButton(
                               style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
+                                backgroundColor: WidgetStateProperty.all(
                                     context.colorTheme.primary),
-                                shape: MaterialStateProperty.all(
+                                shape: WidgetStateProperty.all(
                                     RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(8))),
@@ -357,10 +357,10 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                               horizontal: 8.0, vertical: 4.0),
                           child: FilledButton(
                               style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    context.colorTheme.surface.blend(
-                                        context.colorTheme.primary, 0.1)),
-                                shape: MaterialStateProperty.all(
+                                backgroundColor: WidgetStateProperty.all(context
+                                    .colorTheme.surface
+                                    .blend(context.colorTheme.primary, 0.1)),
+                                shape: WidgetStateProperty.all(
                                     RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(8))),

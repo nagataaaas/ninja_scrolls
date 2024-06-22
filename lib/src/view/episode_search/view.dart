@@ -283,10 +283,10 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
                       children: [
                         FilledButton(
                           style: ButtonStyle(
-                            padding: MaterialStatePropertyAll(EdgeInsets.zero),
-                            backgroundColor: MaterialStateProperty.all(
+                            padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                            backgroundColor: WidgetStateProperty.all(
                                 context.colorTheme.surface),
-                            shape: MaterialStateProperty.all(
+                            shape: WidgetStateProperty.all(
                                 RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(1))),
                           ),

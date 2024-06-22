@@ -3,33 +3,35 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:ninja_scrolls/extentions.dart';
-import 'package:ninja_scrolls/navkey.dart';
 
-Future<bool> createThrowingShuriken(Completer<void> completer) async {
+Future<bool> createThrowingShuriken(
+    BuildContext context, Completer<void> completer) async {
   final Completer<bool> successCompleter = Completer<bool>();
   bool popped = false;
 
+  void ensurePopped(BuildContext context) {
+    if (!popped) {
+      popped = true;
+      Navigator.of(context).pop();
+    }
+  }
+
   showDialog<void>(
-    context: rootNavigatorKey.currentContext!,
+    context: context,
     builder: (context) {
-      return WillPopScope(
-        onWillPop: () async {
+      return PopScope(
+        onPopInvoked: (didPop) async {
+          print('didPop: $didPop');
+          if (didPop) return;
           if (!successCompleter.isCompleted) successCompleter.complete(false);
-          if (!popped) {
-            popped = true;
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          return true;
+          ensurePopped(context);
         },
         child: GestureDetector(
             onTap: () {
               if (!successCompleter.isCompleted) {
                 successCompleter.complete(false);
               }
-              if (!popped) {
-                popped = true;
-                Navigator.of(context, rootNavigator: true).pop();
-              }
+              ensurePopped(context);
             },
             child: ThrowingShuriken(
                 completer: completer,
@@ -37,10 +39,7 @@ Future<bool> createThrowingShuriken(Completer<void> completer) async {
                   if (!successCompleter.isCompleted) {
                     successCompleter.complete(true);
                   }
-                  if (!popped) {
-                    popped = true;
-                    Navigator.of(context, rootNavigator: true).pop();
-                  }
+                  ensurePopped(context);
                 })),
       );
     },
@@ -91,9 +90,11 @@ class _ThrowingShurikenState extends State<ThrowingShuriken>
   void initState() {
     super.initState();
     widget.completer.future.then((value) {
-      setState(() {
-        toIsLoaded = true;
-      });
+      if (mounted) {
+        setState(() {
+          toIsLoaded = true;
+        });
+      }
     });
 
     _slideInController = AnimationController(
@@ -109,7 +110,7 @@ class _ThrowingShurikenState extends State<ThrowingShuriken>
           if (!isLoaded) _loadingController.reverse();
         } else if (status == AnimationStatus.dismissed) {
           Future.delayed(throwingIntervalSleep, () {
-            if (toIsLoaded) {
+            if (toIsLoaded && mounted) {
               setState(() {
                 isLoaded = true;
               });
@@ -159,7 +160,7 @@ class _ThrowingShurikenState extends State<ThrowingShuriken>
 
   void afterShown() {
     isLoaded = widget.completer.isCompleted;
-    if (isLoaded) {
+    if (isLoaded && mounted) {
       setState(() {});
       _loadedController.forward();
       _loadedShurikenController.forward();

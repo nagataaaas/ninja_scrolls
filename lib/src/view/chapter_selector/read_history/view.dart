@@ -141,10 +141,10 @@ class ReadHistoryViewState extends State<ReadHistoryView> {
           children: [
             FilledButton(
               style: ButtonStyle(
-                padding: MaterialStatePropertyAll(EdgeInsets.zero),
+                padding: WidgetStatePropertyAll(EdgeInsets.zero),
                 backgroundColor:
-                    MaterialStateProperty.all(context.colorTheme.surface),
-                shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                    WidgetStateProperty.all(context.colorTheme.surface),
+                shape: WidgetStateProperty.all(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(1))),
               ),
               onPressed: () => open(episodeLink),
