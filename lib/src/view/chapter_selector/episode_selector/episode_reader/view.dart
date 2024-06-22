@@ -814,8 +814,6 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
   @override
   Widget build(BuildContext context) {
-    print(note?.remainedCharNum ?? 0);
-
     return Scaffold(
       body: Stack(
         alignment: Alignment.centerLeft,

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ninja_scrolls/navkey.dart';
 
-Future<bool> createCircuarIndicator(
-    BuildContext context, Completer<void> completer) async {
+Future<bool> createCircuarIndicator(Completer<void> completer) async {
   if (completer.isCompleted) return true;
   final Completer<bool> successCompleter = Completer<bool>();
   bool popped = false;
@@ -16,9 +16,12 @@ Future<bool> createCircuarIndicator(
   }
 
   showDialog<void>(
-    context: context,
-    barrierDismissible: true,
+    context: rootNavigatorKey.currentContext!,
     builder: (context) {
+      completer.future.then((value) {
+        if (!successCompleter.isCompleted) successCompleter.complete(true);
+        ensurePopped(context);
+      });
       return PopScope(
         onPopInvoked: (didPop) async {
           if (didPop) return;
