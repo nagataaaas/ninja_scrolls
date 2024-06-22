@@ -48,7 +48,6 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
   @override
   void dispose() {
     _searchTextController.dispose();
-    context.read<ScaffoldProvider>().episodeSearchAppBar = null;
     super.dispose();
   }
 
@@ -357,21 +356,27 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Scrollbar(
-          controller: scrollController,
-          child: ListView.builder(
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        context.read<ScaffoldProvider>().episodeSearchAppBar = null;
+      },
+      child: Scaffold(
+        body: Scrollbar(
             controller: scrollController,
-            padding: EdgeInsets.zero,
-            itemCount: _searchTextController.value.text == ""
-                ? _histories.length
-                : _searchResultMap.length,
-            itemBuilder: (context, index) {
-              return _searchTextController.value.text == ""
-                  ? historyListViewItem(index)
-                  : searchResultListViewItem(index);
-            },
-          )),
+            child: ListView.builder(
+              controller: scrollController,
+              padding: EdgeInsets.zero,
+              itemCount: _searchTextController.value.text == ""
+                  ? _histories.length
+                  : _searchResultMap.length,
+              itemBuilder: (context, index) {
+                return _searchTextController.value.text == ""
+                    ? historyListViewItem(index)
+                    : searchResultListViewItem(index);
+              },
+            )),
+      ),
     );
   }
 }

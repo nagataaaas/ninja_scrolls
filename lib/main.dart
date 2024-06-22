@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -103,14 +105,18 @@ final router = GoRouter(
               builder: (context, state) => ChapterSelectorView(),
               routes: [
                 GoRoute(
-                  name: Routes.toName(Routes.readHistoryRoute),
-                  path: Routes.readHistory,
-                  pageBuilder: (context, state) => buildTopCurtainTransition(
-                      context: context,
-                      key: state.pageKey,
-                      name: state.name,
-                      child: ReadHistoryView(key: readHistoryKey)),
-                ),
+                    name: Routes.toName(Routes.readHistoryRoute),
+                    path: Routes.readHistory,
+                    pageBuilder: (context, state) => Platform.isIOS
+                        ? CupertinoPage(
+                            name: state.name,
+                            key: state.pageKey,
+                            child: ReadHistoryView(key: readHistoryKey))
+                        : MaterialPage(
+                            name: state.name,
+                            key: state.pageKey,
+                            child: ReadHistoryView(key: readHistoryKey),
+                          )),
                 GoRoute(
                     name: Routes.toName(Routes.chaptersEpisodesRoute),
                     path: Routes.chaptersEpisodes,
@@ -149,10 +155,15 @@ final router = GoRouter(
             GoRoute(
               name: Routes.toName(Routes.searchEpisode),
               path: Routes.searchEpisode,
-              pageBuilder: (context, state) => CupertinoPage(
-                  name: state.name,
-                  key: state.pageKey,
-                  child: EpisodeSearchView()),
+              pageBuilder: (context, state) => Platform.isIOS
+                  ? CupertinoPage(
+                      name: state.name,
+                      key: state.pageKey,
+                      child: EpisodeSearchView())
+                  : MaterialPage(
+                      name: state.name,
+                      key: state.pageKey,
+                      child: EpisodeSearchView()),
             ),
           ],
         ),
