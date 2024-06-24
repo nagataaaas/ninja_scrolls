@@ -68,6 +68,7 @@ dependencies:
   ringo: ^0.0.2
   widget_zoom: ^0.0.4
   async: ^2.11.0
+  flutter_native_splash: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^3.0.1
   import_sorter: ^4.6.0
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -127,3 +129,26 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_native_splash:
+    color: "#0e0b16"
+    image_android: "assets/icon_no_shade.png"
+    image_ios: "assets/icon_no_shade.png"
+
+    color_dark: "#0e0b16"
+    image_dark_android: "assets/icon_no_shade.png"
+    image_dark_ios: "assets/icon_no_shade.png"
+
+    fullscreen: true
+
+    android_12:
+        icon_background_color: "#0e0b16"
+        image: "assets/icon_no_shade.png"
+        icon_background_color_dark: "#0e0b16"
+        image_dark: "assets/icon_no_shade.png"
+
+flutter_icons:
+    image_path: "assets/icon.png"
+    android: true
+    ios: true
+    remove_alpha_ios: true
