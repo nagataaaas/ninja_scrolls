@@ -148,7 +148,8 @@ flutter_native_splash:
         image_dark: "assets/icon_no_shade.png"
 
 flutter_icons:
-    image_path: "assets/icon.png"
+    image_path: "assets/icon_no_shade.png"
     android: true
+    # adaptive_icon_background: null
     ios: true
     remove_alpha_ios: true
