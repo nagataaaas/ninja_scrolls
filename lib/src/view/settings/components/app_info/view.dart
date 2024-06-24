@@ -37,6 +37,7 @@ class _AppInfoViewState extends State<AppInfoView> {
   @override
   Widget build(BuildContext context) {
     return SettingsList(
+      contentPadding: EdgeInsetsDirectional.zero,
       lightTheme:
           context.watch<ThemeProvider>().lightTheme.theme.settingsThemeData,
       darkTheme:
@@ -45,6 +46,7 @@ class _AppInfoViewState extends State<AppInfoView> {
       shrinkWrap: true,
       sections: [
         SettingsSection(
+          margin: EdgeInsetsDirectional.only(top: 16),
           title: const Text('アプリについて'),
           tiles: <SettingsTile>[
             SettingsTile(

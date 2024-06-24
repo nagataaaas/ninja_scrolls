@@ -1,6 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ninja_scrolls/budoux/budoux.dart';
 import 'package:ninja_scrolls/extentions.dart';
 import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
@@ -42,6 +43,7 @@ class _SettingsViewState extends State<SettingsView> {
             controller: scrollController,
             children: [
               SettingsList(
+                contentPadding: EdgeInsetsDirectional.zero,
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 lightTheme: context
@@ -56,6 +58,7 @@ class _SettingsViewState extends State<SettingsView> {
                     .settingsThemeData,
                 sections: [
                   SettingsSection(
+                    margin: EdgeInsetsDirectional.only(top: 32),
                     title: Text('視覚設定', style: context.textTheme.bodyMedium),
                     tiles: <SettingsTile>[
                       SettingsTile.navigation(
@@ -92,6 +95,32 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               SettingsDataView(),
               AppInfoView(),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Ⓒ 2024 nagataaaas',
+                  style: context.textTheme.bodySmall,
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: BudouX.budou(
+                  context,
+                  '※本アプリケーションで提供する 各物語部の画像・アイキャッチ画像・タイトル・本文等は ダイハードテイルズ出版局( 𝕏[旧Twitter]: @njslyr または @dhtls ) が著作・権利を保有するものです。',
+                  style: context.textTheme.bodySmall,
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: BudouX.budou(
+                  context,
+                  '※本アプリケーション内から閲覧できる ニンジャスレイヤー Wiki は有志により運営されているものであり、本アプリの著作者は権利を有していません。',
+                  style: context.textTheme.bodySmall,
+                ),
+              ),
+              SizedBox(height: 32),
             ],
           ),
         ),

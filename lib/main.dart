@@ -4,6 +4,8 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ninja_scrolls/navkey.dart';
 import 'package:ninja_scrolls/route_observer.dart';
@@ -17,7 +19,6 @@ import 'package:ninja_scrolls/src/providers/user_settings_provider.dart';
 import 'package:ninja_scrolls/src/providers/wiki_index_provider.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
 import 'package:ninja_scrolls/src/transitions/liquid_transition.dart';
-import 'package:ninja_scrolls/src/transitions/top_curtain_transition.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/episode_reader/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/read_history/view.dart';
@@ -32,13 +33,16 @@ import 'package:ninja_scrolls/src/view/settings/view.dart';
 import 'package:provider/provider.dart';
 
 Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   DatabaseHelper.instance.ensureInitialized().then((value) {
     if (kDebugMode) {
       DatabaseHelper.instance.deleteDatabase();
     }
   });
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await DefaultCacheManagerExtention.instance.ensureInitialized();
+  FlutterNativeSplash.remove();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(MyApp());
 }
 

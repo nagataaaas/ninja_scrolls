@@ -88,6 +88,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
   @override
   Widget build(BuildContext context) {
     return SettingsList(
+      contentPadding: EdgeInsetsDirectional.zero,
       lightTheme:
           context.watch<ThemeProvider>().lightTheme.theme.settingsThemeData,
       darkTheme:
@@ -96,6 +97,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
       shrinkWrap: true,
       sections: [
         SettingsSection(
+          margin: EdgeInsetsDirectional.only(top: 16),
           title: GestureDetector(
               onLongPress: () async {
                 log('delete database');
@@ -177,6 +179,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
           ],
         ),
         SettingsSection(
+          margin: EdgeInsetsDirectional.only(top: 16),
           title: const Text('目次キャッシュ'),
           tiles: [
             SettingsTile(

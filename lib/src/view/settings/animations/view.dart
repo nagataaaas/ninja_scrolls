@@ -39,7 +39,7 @@ class _SettingsAnimationViewState extends State<SettingsAnimationView> {
                     ? Icons.radio_button_checked
                     : Icons.radio_button_off),
                 title: Text('OS設定に従う'),
-                value: Text(Platform.isAndroid
+                description: Text(Platform.isAndroid
                     ? '設定 > ユーザ補助 > 色と動き > 動きの低減'
                     : Platform.isIOS
                         ? '設定 > アクセシビリティ > 動作 > 視差効果を減らす'

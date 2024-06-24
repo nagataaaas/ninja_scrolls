@@ -66,7 +66,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   dom.Document? document;
   List<dom.Element>? _content;
   bool hasNFiles = false;
-  Map<String, GlobalKey> keys = {};
+  Map<String, GlobalKey> keyByItemId = {};
   int centerItemIndex = 0;
   final GlobalKey listViewKey = GlobalKey();
   List<GlobalKey> globalKeys = [];
@@ -270,7 +270,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                             title: Text(e.title),
                             onTap: () {
                               Scrollable.ensureVisible(
-                                keys[e.id]!.currentContext!,
+                                keyByItemId[e.id]!.currentContext!,
                                 duration: const Duration(milliseconds: 500),
                               );
                             },
@@ -376,14 +376,13 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     );
   }
 
-  Widget bodyAtIndex(int index, GlobalKey key) {
-    final element = content[index];
+  Widget bodyAtIndex(dom.Element element, GlobalKey key) {
     final isCenter =
         (element.attributes['style']?.contains('text-align: center') ??
                 false) ||
             element.innerHtml.contains('text-align: center');
-    keys[element.attributes['name'] ?? element.innerHtml] = key;
-    final isShowingCenter = key == globalKeys[centerItemIndex];
+    keyByItemId[element.attributes['name'] ?? element.innerHtml] = key;
+    final isMiddle = key == globalKeys[centerItemIndex];
 
     final tags =
         RegExp(r'<([a-z]+)( .+?)?>').allMatches(element.outerHtml).map((e) {
@@ -411,10 +410,10 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       );
     } else if ((tags.difference(const {'p', 'br'})).isEmpty) {
       Map<String, WikiPage> wikiPageFilters = {};
-      if (isShowingCenter) {
+      if (isMiddle) {
         wikiPageFilters = filterWikiPages(body);
       }
-      if (isShowingCenter && wikiPageFilters.isNotEmpty) {
+      if (isMiddle && wikiPageFilters.isNotEmpty) {
         final queries = wikiPageFilters.keys
             .sorted((left, right) => right.length.compareTo(left.length));
         final queryRegex = RegExp("(${queries.join('|')})");
@@ -513,7 +512,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       }
     } else {
       final Map<String, WikiPage> wikiPageFilters =
-          isShowingCenter ? filterWikiPages(body) : {};
+          isMiddle ? filterWikiPages(body) : {};
 
       final queries = wikiPageFilters.keys
           .sorted((left, right) => right.length.compareTo(left.length));
@@ -770,7 +769,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
             padding: EdgeInsets.symmetric(
                 horizontal:
                     context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
-            child: bodyAtIndex(index, key),
+            child: bodyAtIndex(content[index], key),
           ),
         );
       }
@@ -824,15 +823,19 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
             enabled: Platform.isIOS,
             child: Scrollbar(
               controller: scrollController,
+              thumbVisibility: true,
               interactive: true,
-              child: ListView.builder(
-                  key: listViewKey,
-                  controller: scrollController,
-                  itemCount: widgetCount,
-                  itemBuilder: (context, index) {
-                    return widgetAtIndex(
-                        index, BoxConstraints(maxHeight: context.screenHeight));
-                  }),
+              child: SingleChildScrollView(
+                child: ListView.builder(
+                    key: listViewKey,
+                    controller: scrollController,
+                    itemCount: widgetCount,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return widgetAtIndex(index,
+                          BoxConstraints(maxHeight: context.screenHeight));
+                    }),
+              ),
             ),
           ),
           SizedBox(

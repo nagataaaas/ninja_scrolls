@@ -29,6 +29,7 @@ class _SettingsThemeViewState extends State<SettingsThemeView> {
         shrinkWrap: true,
         sections: [
           SettingsSection(
+            margin: EdgeInsetsDirectional.zero,
             title: Text('明るさの選択'),
             tiles: <SettingsTile>[
               SettingsTile(
@@ -74,6 +75,7 @@ class _SettingsThemeViewState extends State<SettingsThemeView> {
             ],
           ),
           SettingsSection(
+            margin: EdgeInsetsDirectional.only(top: 16),
             title: Text('テーマ選択'),
             tiles: <SettingsTile>[
               SettingsTile.navigation(

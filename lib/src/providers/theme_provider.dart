@@ -177,6 +177,9 @@ class ThemeProvider extends ChangeNotifier {
               bodyMedium: const TextStyle(
                 fontSize: 14,
               ),
+              bodySmall: const TextStyle(
+                fontSize: 12,
+              ),
             ));
 
     themes[LightTheme.bright] = themes[LightTheme.bright]!.copyWith(

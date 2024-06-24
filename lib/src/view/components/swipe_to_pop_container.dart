@@ -17,7 +17,6 @@ class _SwipeToPopContainerState extends State<SwipeToPopContainer> {
 
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
-        print([details.primaryDelta, details.globalPosition.dx]);
         if (details.primaryDelta! >= 8 && details.globalPosition.dx < 150) {
           Navigator.of(context).pop();
         }

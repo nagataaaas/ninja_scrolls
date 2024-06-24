@@ -16,8 +16,10 @@ Future<T?> showPlatformPicker<T>(
 
 Future<T?> showCupertinoPicker<T>(
     List<T> items, T initialLabel, Map<T, String> labelByItem) async {
+  print([items, initialLabel, labelByItem]);
   T? result = initialLabel;
   int initialIndex = items.indexOf(initialLabel ?? items.first);
+  print([items, items.map((e) => labelByItem[e])]);
 
   result = await showCupertinoModalPopup<T?>(
     context: rootNavigatorKey.currentContext!,
@@ -39,7 +41,7 @@ Future<T?> showCupertinoPicker<T>(
                       width: context.screenWidth * 0.9,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Center(child: Text(labelByItem[items]!)),
+                        child: Center(child: Text(labelByItem[e]!)),
                       )))
                   .toList(),
             ),

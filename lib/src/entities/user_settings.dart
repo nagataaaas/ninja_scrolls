@@ -19,13 +19,17 @@ class UserSettings {
   });
 
   UserSettings copyWith({
+    bool forceUpdateRichAnimationEnabled = false,
     bool? richAnimationEnabled,
     ThemeType? themeType,
     DarkTheme? darkTheme,
     LightTheme? lightTheme,
   }) {
+    final nextRichAnimationEnabled = forceUpdateRichAnimationEnabled
+        ? richAnimationEnabled
+        : richAnimationEnabled ?? this.richAnimationEnabled;
     return UserSettings(
-      richAnimationEnabled: richAnimationEnabled ?? this.richAnimationEnabled,
+      richAnimationEnabled: nextRichAnimationEnabled,
       themeType: themeType ?? this.themeType,
       darkTheme: darkTheme ?? this.darkTheme,
       lightTheme: lightTheme ?? this.lightTheme,
