@@ -3,12 +3,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:ninja_scrolls/extentions.dart';
+import 'package:ninja_scrolls/navkey.dart';
 
-Future<bool> createThrowingShuriken(
-    BuildContext context, Completer<void> completer) async {
+Future<bool> createThrowingShuriken(Completer<void> completer) async {
   final Completer<bool> successCompleter = Completer<bool>();
   bool popped = false;
-
   void ensurePopped(BuildContext context) {
     if (!popped) {
       popped = true;
@@ -17,11 +16,10 @@ Future<bool> createThrowingShuriken(
   }
 
   showDialog<void>(
-    context: context,
+    context: rootNavigatorKey.currentContext!,
     builder: (context) {
       return PopScope(
         onPopInvoked: (didPop) async {
-          print('didPop: $didPop');
           if (didPop) return;
           if (!successCompleter.isCompleted) successCompleter.complete(false);
           ensurePopped(context);
