@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -31,6 +32,7 @@ import 'package:ninja_scrolls/src/static/routes.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/read_history/view.dart';
 import 'package:ninja_scrolls/src/view/components/loading_screen/create_loading_indicator_on_setting.dart';
+import 'package:ninja_scrolls/src/view/components/swipe_to_pop_container.dart';
 import 'package:provider/provider.dart';
 import 'package:ringo/ringo.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -818,17 +820,20 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       body: Stack(
         alignment: Alignment.centerLeft,
         children: [
-          Scrollbar(
-            controller: scrollController,
-            interactive: true,
-            child: ListView.builder(
-                key: listViewKey,
-                controller: scrollController,
-                itemCount: widgetCount,
-                itemBuilder: (context, index) {
-                  return widgetAtIndex(
-                      index, BoxConstraints(maxHeight: context.screenHeight));
-                }),
+          SwipeToPopContainer(
+            enabled: Platform.isIOS,
+            child: Scrollbar(
+              controller: scrollController,
+              interactive: true,
+              child: ListView.builder(
+                  key: listViewKey,
+                  controller: scrollController,
+                  itemCount: widgetCount,
+                  itemBuilder: (context, index) {
+                    return widgetAtIndex(
+                        index, BoxConstraints(maxHeight: context.screenHeight));
+                  }),
+            ),
           ),
           SizedBox(
               width: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5,

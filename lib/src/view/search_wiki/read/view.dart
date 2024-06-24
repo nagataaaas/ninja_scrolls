@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -45,6 +46,21 @@ class _SearchWikiReadViewState extends State<SearchWikiReadView> {
   NavigatorAvailability navigatorAvailability =
       NavigatorAvailability(false, false);
 
+  Future<void> reloadNavigatorAvailability() async {
+    Timer(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      Future.wait([
+        webViewController!.canGoBack(),
+        webViewController!.canGoForward(),
+      ]).then((values) {
+        if (!mounted) return;
+        setState(() {
+          navigatorAvailability = NavigatorAvailability(values[0], values[1]);
+        });
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -64,21 +80,20 @@ class _SearchWikiReadViewState extends State<SearchWikiReadView> {
               // Update loading bar.
             },
             onPageStarted: (String url) {
-              Future.wait([
-                webViewController!.canGoBack(),
-                webViewController!.canGoForward(),
-              ]).then((values) {
-                if (!mounted) return;
-                setState(() {
-                  navigatorAvailability =
-                      NavigatorAvailability(values[0], values[1]);
-                });
-              });
+              reloadNavigatorAvailability();
             },
             onPageFinished: (String url) {
               if (isInitialLoading && mounted) {
                 setState(() {
                   isInitialLoading = false;
+                });
+              }
+            },
+            onUrlChange: (change) {
+              reloadNavigatorAvailability();
+              if (change.url != null) {
+                setState(() {
+                  _currentUrl = change.url!;
                 });
               }
             },
