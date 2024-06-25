@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:collection/collection.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,22 +16,20 @@ import 'package:ninja_scrolls/navkey.dart';
 import 'package:ninja_scrolls/route_observer.dart';
 import 'package:ninja_scrolls/src/gateway/database/note.dart';
 import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
-import 'package:ninja_scrolls/src/gateway/database/wiki.dart';
 import 'package:ninja_scrolls/src/gateway/note.dart';
-import 'package:ninja_scrolls/src/gateway/wiki.dart';
 import 'package:ninja_scrolls/src/providers/episode_index_provider.dart';
 import 'package:ninja_scrolls/src/providers/scaffold_provider.dart';
 import 'package:ninja_scrolls/src/providers/theme_provider.dart';
-import 'package:ninja_scrolls/src/providers/wiki_index_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
-import 'package:ninja_scrolls/src/static/colors.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
+import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/episode_reader/components/htmlWidget.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/read_history/view.dart';
 import 'package:ninja_scrolls/src/view/components/loading_screen/create_loading_indicator_on_setting.dart';
 import 'package:ninja_scrolls/src/view/components/swipe_to_pop_container.dart';
 import 'package:provider/provider.dart';
 import 'package:ringo/ringo.dart';
+import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:widget_zoom/widget_zoom.dart';
 
@@ -67,25 +62,30 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   List<dom.Element>? _content;
   bool hasNFiles = false;
   Map<String, GlobalKey> keyByItemId = {};
-  int centerItemIndex = 0;
+  int middleItemIndex = 0;
+  StreamController<int> middleItemIndexStreamController =
+      StreamController<int>.broadcast();
   final GlobalKey listViewKey = GlobalKey();
   List<GlobalKey> globalKeys = [];
   late final ScrollController scrollController = ScrollController(
     onAttach: (_) async {
       restoreProgress();
       await Future.delayed(const Duration(milliseconds: 500));
-      if (mounted) saveCurrentProgress();
+      if (mounted) await saveCurrentProgress();
     },
   )..addListener(() async {
       await cacheStrategy.fetch(() async {
         await Future.delayed(const Duration(milliseconds: 500));
         final next = getCenterItemIndex();
-        if (next == -1 || next == centerItemIndex || !mounted) return;
+        if (next == middleItemIndex || !mounted) return;
         setState(() {
-          centerItemIndex = next;
+          middleItemIndex = next;
         });
+        middleItemIndexStreamController.add(middleItemIndex);
       });
     });
+  late final ListObserverController listObserverController =
+      ListObserverController(controller: scrollController);
   late final episode = context
       .read<EpisodeIndexProvider>()
       .getEpisodeLinkFromNoteId(widget.argument.episodeId)!;
@@ -166,14 +166,14 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       }
 
       if (itemTop <= listViewCenter && itemBottom >= listViewCenter) {
-        return i;
+        return i - (note?.eyecatchUrl != null ? 1 : 0);
       }
     }
 
     return -1;
   }
 
-  void saveCurrentProgress() {
+  Future<void> saveCurrentProgress() async {
     if (!scrollController.hasClients ||
         !scrollController.position.hasContentDimensions) return;
 
@@ -183,11 +183,12 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     if (progress < 0) progress = 0;
     if (progress > 1) progress = 1;
     final readState = progress > 0.95 ? ReadState.read : ReadState.reading;
-    ReadStateGateway.updateStatus(episode.noteId, readState, progress);
+    ReadStateGateway.updateStatus(
+        episode.noteId, readState, progress, middleItemIndex);
 
-    Future.delayed(const Duration(milliseconds: 3000), () {
+    Future.delayed(const Duration(milliseconds: 1000), () async {
       if (!mounted) return;
-      saveCurrentProgress();
+      await saveCurrentProgress();
     });
   }
 
@@ -209,11 +210,13 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       while (scrollController.position.maxScrollExtent == 0.0) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
-      scrollController.position.animateTo(
-          scrollController.position.maxScrollExtent *
-              value[noteId]!.readProgress,
+      final index = value[noteId]!.index - (note?.eyecatchUrl != null ? 1 : 0);
+      if (index <= 1) return;
+      listObserverController.animateTo(
+          index: index - 1,
           duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOutCubic);
+          alignment: 0.5,
+          curve: Curves.easeOut);
     });
   }
 
@@ -269,10 +272,14 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                           return ListTile(
                             title: Text(e.title),
                             onTap: () {
-                              Scrollable.ensureVisible(
-                                keyByItemId[e.id]!.currentContext!,
-                                duration: const Duration(milliseconds: 500),
-                              );
+                              final index = content.indexWhere((element) {
+                                return element.attributes['name'] == e.id;
+                              });
+                              if (index == -1) return;
+                              listObserverController.animateTo(
+                                  index: index,
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeOutCubic);
                             },
                           );
                         }).toList()),
@@ -336,213 +343,6 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         ),
       );
     });
-  }
-
-  Html buildHtml(String html) {
-    return Html(
-      data: html,
-      style: {
-        'a[href^="wiki:"]': Style(
-          color: context.textTheme.bodyMedium?.color,
-          textDecoration: TextDecoration.underline,
-          textDecorationColor:
-              context.colorTheme.surface.blend(context.colorTheme.primary, 0.5),
-          textDecorationThickness: 3,
-        )
-      },
-      onLinkTap: ((url, _, __) {
-        if (url == null) return;
-        if (url.startsWith('wiki:')) {
-          final page = WikiPage.fromJson(Uri.decodeComponent(url.substring(5)));
-          openWikiPage(page);
-          return;
-        }
-        final noteId = RegExp(r'n[0-9a-z]+', caseSensitive: false)
-            .matchAsPrefix(url.split('/').last)!
-            .group(0);
-        if (noteId == null) return;
-        final chapterId = context
-            .read<EpisodeIndexProvider>()
-            .getChapterIdbyEpisodeNoteId(noteId);
-        if (chapterId == null) return;
-        GoRouter.of(context).goNamed(
-          Routes.toName(Routes.chaptersEpisodesReadRoute),
-          pathParameters: {
-            'chapterId': chapterId.toString(),
-            'episodeId': noteId
-          },
-        );
-      }),
-    );
-  }
-
-  Widget bodyAtIndex(dom.Element element, GlobalKey key) {
-    final isCenter =
-        (element.attributes['style']?.contains('text-align: center') ??
-                false) ||
-            element.innerHtml.contains('text-align: center');
-    keyByItemId[element.attributes['name'] ?? element.innerHtml] = key;
-    final isMiddle = key == globalKeys[centerItemIndex];
-
-    final tags =
-        RegExp(r'<([a-z]+)( .+?)?>').allMatches(element.outerHtml).map((e) {
-      return e.group(1)!;
-    }).toSet();
-    tags.remove('figure');
-
-    late Widget base;
-    late final String body = htmlUnescape.convert(element.innerHtml
-        .replaceAll('<br>', '\n')
-        .replaceAll(RegExp(r'</?([a-z]+)( .+?)?>'), ''));
-
-    if (tags.difference(const {'h2'}).isEmpty) {
-      base = Padding(
-        padding: EdgeInsets.symmetric(
-            vertical: context.textTheme.bodyMedium!.lineHeightPixel!),
-        child: Text(
-          textAlign: isCenter ? TextAlign.center : TextAlign.start,
-          body,
-          style: GoogleFonts.reggaeOne(
-            fontSize: context.textTheme.headlineMedium?.fontSize,
-            color: context.textTheme.headlineMedium?.color,
-          ),
-        ),
-      );
-    } else if ((tags.difference(const {'p', 'br'})).isEmpty) {
-      Map<String, WikiPage> wikiPageFilters = {};
-      if (isMiddle) {
-        wikiPageFilters = filterWikiPages(body);
-      }
-      if (isMiddle && wikiPageFilters.isNotEmpty) {
-        final queries = wikiPageFilters.keys
-            .sorted((left, right) => right.length.compareTo(left.length));
-        final queryRegex = RegExp("(${queries.join('|')})");
-
-        int currentIndex = 0;
-        final List<TextSpan> spans = [];
-        for (final match in queryRegex.allMatches(body)) {
-          if (match.start < currentIndex) continue;
-          if (match.start != currentIndex) {
-            spans.add(TextSpan(
-                text: body.substring(currentIndex, match.start),
-                style: context.textTheme.bodyMedium));
-          }
-          final query = match.group(0)!;
-          final page = wikiPageFilters[query]!;
-
-          spans.add(TextSpan(
-              text: query,
-              style: TextStyle(
-                decoration: TextDecoration.underline,
-                decorationColor: context.colorTheme.surface
-                    .blend(context.colorTheme.primary, 0.5),
-                decorationThickness: 3,
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () async {
-                  openWikiPage(page);
-                }));
-
-          currentIndex = match.end;
-        }
-
-        if (currentIndex < body.length) {
-          spans.add(TextSpan(
-              text: body.substring(currentIndex),
-              style: context.textTheme.bodyMedium));
-        }
-
-        base = RichText(
-            textAlign: isCenter ? TextAlign.center : TextAlign.start,
-            textScaler: MediaQuery.of(context).textScaler,
-            text:
-                TextSpan(children: spans, style: context.textTheme.bodyMedium));
-      } else {
-        base = Text(
-            textAlign: isCenter ? TextAlign.center : TextAlign.start, body);
-      }
-      base = Padding(
-        padding: EdgeInsets.symmetric(
-            vertical: context.textTheme.bodyMedium!.lineHeightPixel! * 0.8),
-        child: base,
-      );
-    } else if (tags.intersection(const {'blockquote'}).isNotEmpty) {
-      base = Container(
-        color:
-            context.colorTheme.surface.blend(context.colorTheme.primary, 0.1),
-        padding: EdgeInsets.all(
-            context.textTheme.bodyMedium!.lineHeightPixel! * 0.8),
-        child: Center(
-          child: Text(
-            textAlign: isCenter ? TextAlign.center : TextAlign.start,
-            body,
-            style: GoogleFonts.reggaeOne(
-              fontSize: context.textTheme.bodyMedium?.fontSize,
-              color: context.textTheme.bodyMedium?.color,
-            ),
-          ),
-        ),
-      );
-    } else if (tags.intersection(const {'img'}).isNotEmpty) {
-      final img = element.querySelector('img')!;
-      final url = img.attributes['src']!;
-      final caption = element.querySelector('figcaption')?.innerHtml;
-
-      if (caption == null) {
-        base = Padding(
-          padding: EdgeInsets.symmetric(
-              vertical: context.textTheme.bodyMedium.lineHeightPixel!),
-          child: tryCacheImage(url),
-        );
-      } else {
-        base = Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(
-                  top: context.textTheme.bodyMedium.lineHeightPixel!),
-              child: tryCacheImage(url),
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                  bottom: context.textTheme.bodyMedium.lineHeightPixel!),
-              child: buildHtml(caption),
-            ),
-          ],
-        );
-      }
-    } else {
-      final Map<String, WikiPage> wikiPageFilters =
-          isMiddle ? filterWikiPages(body) : {};
-
-      final queries = wikiPageFilters.keys
-          .sorted((left, right) => right.length.compareTo(left.length));
-      final queryRegex = RegExp("(${queries.join('|')})");
-      final html = wikiPageFilters.isNotEmpty
-          ? element.outerHtml.replaceAllMapped(queryRegex, (match) {
-              final query = match.group(0)!;
-              final page = wikiPageFilters[query];
-              if (page == null) return query;
-              return '<a href="wiki:${Uri.encodeComponent(page.toJson())}">$query</a>';
-            })
-          : element.outerHtml;
-      base = buildHtml(html);
-    }
-    if (isCenter && base is! Html) {
-      return Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Expanded(child: base)]);
-    }
-    return base;
-  }
-
-  void openWikiPage(WikiPage page) async {
-    context.read<WikiIndexProvider>().updateLastAccessedAt(page.title);
-
-    GoRouter.of(context).goNamed(
-      Routes.toName(Routes.searchWikiReadRoute),
-      queryParameters: {'wikiTitle': page.title, 'wikiEndpoint': page.endpoint},
-    );
   }
 
   List<dom.Element> get content {
@@ -666,110 +466,89 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     return result;
   }
 
-  Map<String, WikiPage> filterWikiPages(String text,
-      {double matchRate = 0.65}) {
-    if (text.length > 300) return {};
+  Widget buildEyeCatch(Key key, BoxConstraints bodyConstraints) {
+    return ConstrainedBox(
+      key: key,
+      constraints: BoxConstraints(
+          minHeight: bodyConstraints.maxHeight - context.screenHeight * 0.55),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: AspectRatio(
+          aspectRatio: 1280 / 670,
+          child: CachedNetworkImage(
+            imageUrl: note!.eyecatchUrl!,
+            placeholder: (context, url) {
+              return Container(
+                color: context.colorTheme.surface,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
 
-    final sentences = text.split(RegExp(r'[！「」、。？!?\n]')).map((e) => e.trim());
+  Widget buildPaidMembershipRequiredBlock(Key key) {
+    return Padding(
+      key: key,
+      padding: EdgeInsets.symmetric(
+          horizontal: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
+      child: Text(
+        '残り${note?.remainedCharNum}文字のエピソードを読むには、有料メンバーシップへの加入が必要です',
+        style: context.textTheme.headlineSmall,
+      ),
+    );
+  }
 
-    final Map<String, WikiPage> methodResult = {};
-
-    for (final sentence in sentences) {
-      if (sentence.isEmpty) continue;
-
-      final tokenized = ringo?.tokenize(sentence);
-      if (tokenized == null || tokenized.isEmpty) continue;
-
-      final wikiIndexProvider = context.read<WikiIndexProvider>();
-
-      int startIndex = 0;
-      while (startIndex < tokenized.length) {
-        WordSearchResult? result;
-        int? currentMatchEndIndex;
-        String? token;
-        String? sanitizedToken;
-        for (int endIndex = startIndex + 1;
-            endIndex <= tokenized.length;
-            endIndex++) {
-          final currentToken = tokenized.sublist(startIndex, endIndex).join();
-          final sanitizedCurrentToken =
-              WikiNetworkGateway.sanitizeForSearch(currentToken);
-          if (sanitizedCurrentToken.isEmpty) break;
-          if (sanitizedCurrentToken.length < 3) continue;
-          if (sanitizedCurrentToken == sanitizedToken) continue;
-
-          if (sanitizedCurrentToken.length > 40) break;
-
-          final currentResult = wikiIndexProvider.findPages(currentToken);
-          if (currentResult.isEmpty) break;
-          final preferredResult = currentResult.last;
-
-          if (result == null || result.score <= preferredResult.score) {
-            result = preferredResult;
-            token = currentToken;
-            sanitizedToken = sanitizedCurrentToken;
-            currentMatchEndIndex = endIndex;
-            continue;
-          } else if ((preferredResult.score - result.score) < 0.2) {
-            continue;
-          } else {
-            break;
-          }
-        }
-        if (result != null && token != null && result.matchRate >= matchRate) {
-          methodResult[token] = result.page;
-        }
-        if (currentMatchEndIndex != null) {
-          startIndex = currentMatchEndIndex;
-        } else {
-          startIndex++;
-        }
-      }
-    }
-    return methodResult;
+  Widget buildNavigationButtons(Key key, BoxConstraints bodyConstraints) {
+    return ConstrainedBox(
+      key: key,
+      constraints: BoxConstraints(
+          minHeight: bodyConstraints.maxHeight - context.screenHeight * 0.55),
+      child: Padding(
+        key: key,
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            Expanded(child: previousButton),
+            SizedBox(width: 10),
+            Expanded(child: nextButton),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget widgetAtIndex(int index, BoxConstraints bodyConstraints) {
     if (globalKeys.length <= index) {
-      globalKeys.add(GlobalKey(debugLabel: index.toString()));
+      for (int i = globalKeys.length; i <= index; i++) {
+        globalKeys
+            .add(GlobalKey(debugLabel: '${Random.secure()}${i.toString()}'));
+      }
     }
     final key = globalKeys[index];
 
     if (note?.eyecatchUrl != null) {
       if (--index < 0) {
-        return ConstrainedBox(
-          key: key,
-          constraints: BoxConstraints(
-              minHeight:
-                  bodyConstraints.maxHeight - context.screenHeight * 0.55),
-          child: AspectRatio(
-              aspectRatio: 1280 / 670,
-              child: CachedNetworkImage(
-                imageUrl: note!.eyecatchUrl!,
-                placeholder: (context, url) {
-                  return Container(
-                    color: context.colorTheme.surface,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                },
-              )),
-        );
+        return buildEyeCatch(key, bodyConstraints);
       }
     }
     if (document != null) {
       if (index < content.length) {
-        return SelectionArea(
-          key: key,
-          onSelectionChanged: (value) {
-            log(value?.plainText ?? '');
-          },
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal:
-                    context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
-            child: bodyAtIndex(content[index], key),
+        final element = content[index];
+        keyByItemId[element.attributes['name'] ?? element.innerHtml] = key;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
+          child: HtmlWidget(
+            key: key,
+            element: content[index],
+            selfIndex: index,
+            middleItemIndexStream: middleItemIndexStreamController.stream,
           ),
         );
       }
@@ -777,33 +556,11 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     }
     if ((note?.remainedCharNum ?? 0) != 0) {
       if (--index < 0) {
-        return Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
-          child: Text(
-            '残り${note?.remainedCharNum}文字のエピソードを読むには、有料メンバーシップへの加入が必要です',
-            style: context.textTheme.headlineSmall,
-          ),
-        );
+        return buildPaidMembershipRequiredBlock(key);
       }
     }
     if (--index < 0) {
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-            minHeight: bodyConstraints.maxHeight - context.screenHeight * 0.55),
-        child: Padding(
-          key: key,
-          padding: EdgeInsets.symmetric(
-              horizontal: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
-          child: Row(
-            children: [
-              Expanded(child: previousButton),
-              SizedBox(width: 10),
-              Expanded(child: nextButton),
-            ],
-          ),
-        ),
-      );
+      return buildNavigationButtons(key, bodyConstraints);
     }
     if (--index < 0) {
       return SizedBox(key: key, height: 20);
@@ -825,7 +582,8 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
               controller: scrollController,
               thumbVisibility: true,
               interactive: true,
-              child: SingleChildScrollView(
+              child: ListViewObserver(
+                controller: listObserverController,
                 child: ListView.builder(
                     key: listViewKey,
                     controller: scrollController,

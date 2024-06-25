@@ -92,18 +92,21 @@ enum ReadState { notRead, reading, read }
 class ReadStatus {
   final ReadState state;
   final double readProgress;
+  final int index;
 
-  ReadStatus({required this.state, required this.readProgress});
+  ReadStatus(
+      {required this.state, required this.readProgress, required this.index});
 
   factory ReadStatus.fromDatabase(Map<String, dynamic> json) {
     return ReadStatus(
       state: json['is_completed'] == 1 ? ReadState.read : ReadState.reading,
       readProgress: (json['read_progress'] / ReadStateGateway.realToInteger),
+      index: json['_index'],
     );
   }
 
   factory ReadStatus.zero() {
-    return ReadStatus(state: ReadState.notRead, readProgress: 0);
+    return ReadStatus(state: ReadState.notRead, readProgress: 0, index: 0);
   }
 }
 
@@ -118,6 +121,7 @@ class ReadStateGateway {
         is_completed INTEGER NOT NULL,
         updated_at TEXT NOT NULL,
         read_progress INTEGER NOT NULL DEFAULT 0,
+        _index INTEGER NOT NULL DEFAULT 0,
         foreign key (note_id) references ${NoteGateway.tableName}(id)
       )
     ''';
@@ -144,7 +148,7 @@ class ReadStateGateway {
   }
 
   static Future<void> updateStatus(
-      String noteId, ReadState state, double? readProgress) async {
+      String noteId, ReadState state, double? readProgress, int? index) async {
     if (readProgress == null || readProgress.isNaN) {
       readProgress = 0.0;
     } else if (readProgress > 1.0 || readProgress.isInfinite) {
@@ -159,6 +163,7 @@ class ReadStateGateway {
           {
             'is_completed': state == ReadState.read ? 1 : 0,
             'read_progress': (readProgress * realToInteger).toInt(),
+            '_index': index,
             'updated_at': DateTime.now().toIso8601String(),
           },
           where: 'note_id = ?',
@@ -168,6 +173,7 @@ class ReadStateGateway {
         'note_id': noteId,
         'is_completed': state == ReadState.read ? 1 : 0,
         'read_progress': (readProgress * realToInteger).toInt(),
+        '_index': index,
         'updated_at': DateTime.now().toIso8601String(),
       });
     }
