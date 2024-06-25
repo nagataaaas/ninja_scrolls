@@ -215,7 +215,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       listObserverController.animateTo(
           index: index - 1,
           duration: const Duration(milliseconds: 500),
-          alignment: 1,
+          alignment: 0.7,
           curve: Curves.easeOut);
     });
   }
@@ -270,7 +270,10 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                         ),
                         ...(note!.availableIndexItems.map((e) {
                           return ListTile(
-                            title: Text(e.title),
+                            title: Text(
+                              e.title,
+                              style: context.textTheme.bodyLarge,
+                            ),
                             onTap: () {
                               final index = content.indexWhere((element) {
                                 return element.attributes['name'] == e.id;
