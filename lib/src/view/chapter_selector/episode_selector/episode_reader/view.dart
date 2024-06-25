@@ -290,7 +290,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
               ),
               if (note?.bookPurchaseLink != null)
                 AspectRatio(
-                  aspectRatio: 9 / 16 * 2,
+                  aspectRatio: 9 / 8,
                   child: GestureDetector(
                     onTap: () async {
                       final url = Uri.parse(note!.bookPurchaseLink!.url);
@@ -306,8 +306,12 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                         children: [
                           if (note!.bookPurchaseLink!.imageUrl != null) ...[
                             Expanded(
-                                child: tryCacheImage(
-                                    note!.bookPurchaseLink!.imageUrl!)),
+                                child: AspectRatio(
+                              aspectRatio: 259 / 368,
+                              child: CachedNetworkImage(
+                                  imageUrl: note!.bookPurchaseLink!.imageUrl ??
+                                      'https://via.placeholder.com/150'),
+                            )),
                             SizedBox(width: 12),
                           ],
                           Expanded(
