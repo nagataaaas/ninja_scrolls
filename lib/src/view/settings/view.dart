@@ -66,15 +66,13 @@ class _SettingsViewState extends State<SettingsView> {
                           leading: Icon(Icons.contrast),
                           title: Text('テーマ',
                               style: context.textTheme.headlineSmall),
-                          value: Text(
-                              {
-                                AdaptiveThemeMode.system: 'OS設定に従う',
-                                AdaptiveThemeMode.light:
-                                    'ライト (${context.watch<ThemeProvider>().lightTheme.name})',
-                                AdaptiveThemeMode.dark:
-                                    'ダーク (${context.watch<ThemeProvider>().darkTheme.name})'
-                              }[AdaptiveTheme.of(context).mode]!,
-                              style: context.textTheme.bodyMedium),
+                          value: Text({
+                            AdaptiveThemeMode.system: 'OS設定に従う',
+                            AdaptiveThemeMode.light:
+                                'ライト (${context.watch<ThemeProvider>().lightTheme.name})',
+                            AdaptiveThemeMode.dark:
+                                'ダーク (${context.watch<ThemeProvider>().darkTheme.name})'
+                          }[AdaptiveTheme.of(context).mode]!),
                           onPressed: (context) {
                             GoRouter.of(context).go(Routes.settingThemeRoute);
                           },
