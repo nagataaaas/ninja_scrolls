@@ -88,6 +88,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
   @override
   Widget build(BuildContext context) {
     return SettingsList(
+      platform: DevicePlatform.android,
       contentPadding: EdgeInsetsDirectional.zero,
       lightTheme:
           context.watch<ThemeProvider>().lightTheme.theme.settingsThemeData,
@@ -121,7 +122,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                 },
                 trailing: Icon(Icons.delete_forever_outlined,
                     color: context.colorTheme.primary),
-                value: allCacheSize == null
+                description: allCacheSize == null
                     ? const CircularProgressIndicator()
                     : Text(allCacheSize!.formatByteSize())),
             SettingsTile(
@@ -138,7 +139,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                 },
                 trailing: Icon(Icons.delete_forever_outlined,
                     color: context.colorTheme.primary),
-                value: episodesCacheSize == null
+                description: episodesCacheSize == null
                     ? const CircularProgressIndicator()
                     : Text(episodesCacheSize!.formatByteSize())),
             SettingsTile(
@@ -156,7 +157,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                 },
                 trailing: Icon(Icons.delete_forever_outlined,
                     color: context.colorTheme.primary),
-                value: readStateCacheSize == null
+                description: readStateCacheSize == null
                     ? const CircularProgressIndicator()
                     : Text(readStateCacheSize!.formatByteSize())),
             SettingsTile(
@@ -173,7 +174,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                 },
                 trailing: Icon(Icons.delete_forever_outlined,
                     color: context.colorTheme.primary),
-                value: imageCacheSize == null
+                description: imageCacheSize == null
                     ? const CircularProgressIndicator()
                     : Text(imageCacheSize!.formatByteSize()))
           ],
@@ -202,7 +203,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
               },
               trailing: Icon(Icons.delete_forever_outlined,
                   color: context.colorTheme.primary),
-              value: isIndexCacheLoading
+              description: isIndexCacheLoading
                   ? CircularProgressIndicator.adaptive()
                   : Text(indexCachedAt == null
                       ? '未キャッシュ'
@@ -229,7 +230,7 @@ class _SettingsDataViewState extends State<SettingsDataView> {
               },
               trailing: Icon(Icons.delete_forever_outlined,
                   color: context.colorTheme.primary),
-              value: isWikiIndexCacheLoading
+              description: isWikiIndexCacheLoading
                   ? CircularProgressIndicator.adaptive()
                   : Text(wikiIndexCachedAt == null
                       ? '未キャッシュ'

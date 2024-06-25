@@ -393,6 +393,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
                               ? buildGuide(chapterChild.guide!)
                               : buildEpisodeGroup(
                                   chapterChild.episodeLinkGroup!),
+                        SizedBox(height: 40)
                       ],
                     ),
                   ),

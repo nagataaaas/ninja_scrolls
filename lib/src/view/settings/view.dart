@@ -44,6 +44,7 @@ class _SettingsViewState extends State<SettingsView> {
               controller: scrollController,
               children: [
                 SettingsList(
+                  platform: DevicePlatform.android,
                   contentPadding: EdgeInsetsDirectional.zero,
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,

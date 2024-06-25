@@ -37,6 +37,7 @@ class _AppInfoViewState extends State<AppInfoView> {
   @override
   Widget build(BuildContext context) {
     return SettingsList(
+      platform: DevicePlatform.android,
       contentPadding: EdgeInsetsDirectional.zero,
       lightTheme:
           context.watch<ThemeProvider>().lightTheme.theme.settingsThemeData,
