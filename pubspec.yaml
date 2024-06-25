@@ -69,6 +69,7 @@ dependencies:
     async: ^2.11.0
     flutter_native_splash: ^2.4.0
     scrollable_positioned_list: ^0.3.8
+    scrollview_observer: ^1.20.0
 
 dev_dependencies:
     flutter_test:
@@ -131,28 +132,28 @@ flutter:
     # see https://flutter.dev/custom-fonts/#from-packages
 
 flutter_native_splash:
-    color: "#0e0b16"
-    image_android: "assets/icon_no_shade.png"
-    image_ios: "assets/icon_no_shade.png"
+    color: "#8d2828"
+    image_android: "assets/icon_splash.png"
+    image_ios: "assets/icon_splash.png"
 
-    color_dark: "#0e0b16"
-    image_dark_android: "assets/icon_no_shade.png"
-    image_dark_ios: "assets/icon_no_shade.png"
+    color_dark: "#8d2828"
+    image_dark_android: "assets/icon_splash.png"
+    image_dark_ios: "assets/icon_splash.png"
 
     ios: true
     android: true
     fullscreen: true
 
     android_12:
-        icon_background_color: "#0e0b16"
-        image: "assets/icon_no_shade.png"
-        icon_background_color_dark: "#0e0b16"
-        image_dark: "assets/icon_no_shade.png"
+        icon_background_color: "#8d2828"
+        image: "assets/icon_splash.png"
+        icon_background_color_dark: "#8d2828"
+        image_dark: "assets/icon_splash.png"
 
 flutter_icons:
-    image_path: "assets/icon.png"
-    image_path_android: "assets/icon_no_shade.png"
-    android: true
-    # adaptive_icon_background: null
+    image_path: "assets/icon_ios.png"
     ios: true
     remove_alpha_ios: true
+    android: true
+    adaptive_icon_foreground: "assets/icon_transparent_foreground.png"
+    adaptive_icon_background: "#8d2828"
