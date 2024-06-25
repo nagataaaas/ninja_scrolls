@@ -142,8 +142,6 @@ class ThemeProvider extends ChangeNotifier {
             ));
 
     for (final themeMixin in themes.keys) {
-      print(
-          "themeMixin: $themeMixin, ${themes[themeMixin]!.textTheme.bodyMedium!.color}");
       themes[themeMixin] = themes[themeMixin]!.copyWith(
           textTheme: textTheme?.apply(
         bodyColor: themes[themeMixin]!.colorScheme.primary,
