@@ -25,44 +25,25 @@ Map<ThemeMixin, ThemeData> themes = {
       onTertiary: colors.Common.white,
       error: colors.Common.errorRed,
     ),
-    textTheme: textTheme?.apply(
-      bodyColor: colors.Common.black,
-      displayColor: colors.Common.black,
-    ),
+    brightness: Brightness.light,
+    textTheme: textTheme,
+  ),
+  LightTheme.leaf: ThemeData(
+    useMaterial3: true,
+    colorSchemeSeed: colors.Common.white,
+    brightness: Brightness.light,
+    textTheme: textTheme,
   ),
   LightTheme.milk: ThemeData(
     useMaterial3: true,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: colors.Common.dustMilk,
-      foregroundColor: colors.Common.dark,
-    ),
-    colorScheme: const ColorScheme.light(
-      surface: colors.Common.dustMilk,
-      primary: colors.Common.dark,
-      onPrimary: colors.Common.dustMilk,
-      secondary: colors.Common.grey1,
-      onSecondary: colors.Common.lightGrey2,
-      tertiary: colors.Common.accent,
-      onTertiary: colors.Common.dustMilk,
-      error: colors.Common.errorRed,
-    ),
+    colorSchemeSeed: colors.Common.milk,
     brightness: Brightness.light,
-    textTheme: textTheme?.apply(
-      bodyColor: colors.Common.dark,
-      displayColor: colors.Common.dark,
-    ),
+    textTheme: textTheme,
   ),
   LightTheme.automn: ThemeData(
-    appBarTheme: const AppBarTheme(
-      foregroundColor: colors.Common.peach,
-    ),
     useMaterial3: true,
     colorSchemeSeed: colors.Common.peach,
     brightness: Brightness.light,
-    textTheme: textTheme?.apply(
-      bodyColor: colors.Common.darkPeach,
-      displayColor: colors.Common.darkPeach,
-    ),
   ),
   DarkTheme.black: ThemeData(
     useMaterial3: true,
@@ -76,68 +57,46 @@ Map<ThemeMixin, ThemeData> themes = {
       onTertiary: colors.Common.white,
       error: colors.Common.errorRed,
     ),
-    textTheme: textTheme,
+    brightness: Brightness.dark,
+  ),
+  DarkTheme.fuji: ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
   ),
   DarkTheme.dusk: ThemeData(
     useMaterial3: true,
-    appBarTheme: AppBarTheme(
-      foregroundColor: colors.Common.dusk.lighten(.2),
-    ),
     colorSchemeSeed: colors.Common.dusk.lighten(.2),
     brightness: Brightness.dark,
-    textTheme: textTheme?.apply(
-      bodyColor: colors.Common.dusk.lighten(0.4),
-      displayColor: colors.Common.dusk.lighten(0.7),
-    ),
   ),
   DarkTheme.cyber: ThemeData(
     useMaterial3: true,
-    appBarTheme: AppBarTheme(
-      foregroundColor: colors.Common.geekGreen,
-    ),
     colorSchemeSeed: colors.Common.geekGreen,
     brightness: Brightness.dark,
-    textTheme: textTheme?.apply(
-      bodyColor: colors.Common.geekGreen,
-      displayColor: colors.Common.geekGreen,
-    ),
   ),
 };
 
 enum LightTheme with ThemeMixin {
-  bright,
-  milk,
-  automn;
+  bright('ブライト'),
+  milk('ミルク'),
+  leaf('リーフ'),
+  automn('オータム');
+
+  const LightTheme(this.name);
 
   @override
-  String get name {
-    switch (this) {
-      case LightTheme.bright:
-        return 'ブライト';
-      case LightTheme.milk:
-        return 'ミルク';
-      case LightTheme.automn:
-        return 'オータム';
-    }
-  }
+  final String name;
 }
 
 enum DarkTheme with ThemeMixin {
-  black,
-  dusk,
-  cyber;
+  black('ブラック'),
+  dusk('ダスク'),
+  fuji('フジ'),
+  cyber('サイバー');
+
+  const DarkTheme(this.name);
 
   @override
-  String get name {
-    switch (this) {
-      case DarkTheme.black:
-        return 'ブラック';
-      case DarkTheme.dusk:
-        return 'ダスク';
-      case DarkTheme.cyber:
-        return 'サイバー';
-    }
-  }
+  final String name;
 }
 
 class ThemeProvider extends ChangeNotifier {
@@ -182,39 +141,15 @@ class ThemeProvider extends ChangeNotifier {
               ),
             ));
 
-    themes[LightTheme.bright] = themes[LightTheme.bright]!.copyWith(
-      textTheme: textTheme?.apply(
-        bodyColor: colors.Common.black,
-        displayColor: colors.Common.black,
-      ),
-    );
-    themes[LightTheme.milk] = themes[LightTheme.milk]!.copyWith(
-      textTheme: textTheme!.apply(
-        bodyColor: colors.Common.dark,
-        displayColor: colors.Common.dark,
-      ),
-    );
-    themes[LightTheme.automn] = themes[LightTheme.automn]!.copyWith(
-      textTheme: textTheme!.apply(
-        bodyColor: colors.Common.peach,
-        displayColor: colors.Common.peach,
-      ),
-    );
-    themes[DarkTheme.black] = themes[DarkTheme.black]!.copyWith(
-      textTheme: textTheme,
-    );
-    themes[DarkTheme.dusk] = themes[DarkTheme.dusk]!.copyWith(
-      textTheme: textTheme!.apply(
-        bodyColor: colors.Common.dusk.lighten(0.4),
-        displayColor: colors.Common.dusk.lighten(0.6),
-      ),
-    );
-    themes[DarkTheme.cyber] = themes[DarkTheme.cyber]!.copyWith(
-      textTheme: textTheme!.apply(
-        bodyColor: colors.Common.geekGreen,
-        displayColor: colors.Common.geekGreen,
-      ),
-    );
+    for (final themeMixin in themes.keys) {
+      print(
+          "themeMixin: $themeMixin, ${themes[themeMixin]!.textTheme.bodyMedium!.color}");
+      themes[themeMixin] = themes[themeMixin]!.copyWith(
+          textTheme: textTheme?.apply(
+        bodyColor: themes[themeMixin]!.colorScheme.primary,
+        displayColor: themes[themeMixin]!.colorScheme.primary,
+      ));
+    }
 
     notifyListeners();
   }
