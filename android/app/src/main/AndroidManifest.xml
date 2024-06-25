@@ -13,7 +13,7 @@
         <package android:name="com.twitter.android" />
     </queries>
    <application
-        android:label="ninja_scrolls"
+        android:label="ニンジャスクロールズ"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
