@@ -67,6 +67,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       StreamController<int>.broadcast();
   final GlobalKey listViewKey = GlobalKey();
   List<GlobalKey> globalKeys = [];
+  int currentIndex = 0;
   late final ScrollController scrollController = ScrollController(
     onAttach: (_) async {
       restoreProgress();
@@ -148,6 +149,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     final listViewTop = listViewBox.localToGlobal(Offset.zero).dy;
     final listViewBottom = listViewTop + listViewBox.size.height;
     final listViewCenter = listViewTop + listViewBox.size.height / 2;
+    bool firstVisibleFound = false;
 
     for (var i = 0; i < globalKeys.length; i++) {
       var itemTop = 0.0;
@@ -161,12 +163,19 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         // item is not visible
       }
 
+      if (itemBottom > listViewTop) {
+        if (!firstVisibleFound) {
+          firstVisibleFound = true;
+          currentIndex = i;
+        }
+      }
+
       if (itemTop > listViewBottom) {
         break;
       }
 
       if (itemTop <= listViewCenter && itemBottom >= listViewCenter) {
-        return i - (note?.eyecatchUrl != null ? 1 : 0);
+        return i;
       }
     }
 
@@ -207,15 +216,20 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     ReadStateGateway.getStatus([noteId]).then((value) async {
       if (!mounted) return;
       if (!value.containsKey(noteId)) return;
+      final listViewBox =
+          listViewKey.currentContext?.findRenderObject() as RenderBox?;
+      if (listViewBox == null) return;
+
       while (scrollController.position.maxScrollExtent == 0.0) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
-      final index = value[noteId]!.index - (note?.eyecatchUrl != null ? 1 : 0);
-      if (index <= 1) return;
+      final offset = listViewBox.size.height / 2;
+
       listObserverController.animateTo(
-          index: index - 1,
+          index: value[noteId]!.index,
           duration: const Duration(milliseconds: 500),
-          alignment: 0.7,
+          alignment: 0.5,
+          offset: (_) => offset,
           curve: Curves.easeOut);
     });
   }
@@ -275,13 +289,21 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                               style: context.textTheme.bodyLarge,
                             ),
                             onTap: () {
+                              final listViewBox = listViewKey.currentContext
+                                  ?.findRenderObject() as RenderBox?;
+                              if (listViewBox == null) return;
+                              final offset = listViewBox.size.height / 2;
+                              ;
                               final index = content.indexWhere((element) {
-                                return element.attributes['name'] == e.id;
-                              });
-                              if (index == -1) return;
+                                    return element.attributes['name'] == e.id;
+                                  }) +
+                                  preContentCount;
+                              if (index < 0) return;
                               listObserverController.animateTo(
                                   index: index,
                                   duration: const Duration(milliseconds: 500),
+                                  alignment: 0.5,
+                                  offset: (_) => offset,
                                   curve: Curves.easeOutCubic);
                             },
                           );
@@ -464,9 +486,13 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     );
   }
 
+  int get preContentCount {
+    return (note?.eyecatchUrl != null) ? 1 : 0;
+  }
+
   int get widgetCount {
     int result = 0;
-    if (note?.eyecatchUrl != null) result++;
+    result += preContentCount;
     if (document != null) result += content.length;
     if (note != null && note!.remainedCharNum != 0) result++;
     result += 2;
@@ -530,6 +556,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   }
 
   Widget widgetAtIndex(int index, BoxConstraints bodyConstraints) {
+    int _index = index;
     if (globalKeys.length <= index) {
       for (int i = globalKeys.length; i <= index; i++) {
         globalKeys
@@ -539,13 +566,13 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
     final key = globalKeys[index];
 
     if (note?.eyecatchUrl != null) {
-      if (--index < 0) {
+      if (--_index < 0) {
         return buildEyeCatch(key, bodyConstraints);
       }
     }
     if (document != null) {
-      if (index < content.length) {
-        final element = content[index];
+      if (_index < content.length) {
+        final element = content[_index];
         keyByItemId[element.attributes['name'] ?? element.innerHtml] = key;
 
         return Padding(
@@ -554,23 +581,23 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
           child: HtmlWidget(
             key: key,
             ringo: ringo,
-            element: content[index],
+            element: content[_index],
             selfIndex: index,
             middleItemIndexStream: middleItemIndexStreamController.stream,
           ),
         );
       }
-      index -= content.length;
+      _index -= content.length;
     }
     if ((note?.remainedCharNum ?? 0) != 0) {
-      if (--index < 0) {
+      if (--_index < 0) {
         return buildPaidMembershipRequiredBlock(key);
       }
     }
-    if (--index < 0) {
+    if (--_index < 0) {
       return buildNavigationButtons(key, bodyConstraints);
     }
-    if (--index < 0) {
+    if (--_index < 0) {
       return SizedBox(key: key, height: 20);
     }
     return Container(
