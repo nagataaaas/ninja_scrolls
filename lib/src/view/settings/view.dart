@@ -61,12 +61,11 @@ class _SettingsViewState extends State<SettingsView> {
                   sections: [
                     SettingsSection(
                       margin: EdgeInsetsDirectional.only(top: 32),
-                      title: Text('視覚設定', style: context.textTheme.bodyMedium),
+                      title: Text('視覚設定'),
                       tiles: <SettingsTile>[
                         SettingsTile.navigation(
                           leading: Icon(Icons.contrast),
-                          title: Text('テーマ',
-                              style: context.textTheme.headlineSmall),
+                          title: Text('テーマ'),
                           value: Text({
                             AdaptiveThemeMode.system: 'OS設定に従う',
                             AdaptiveThemeMode.light:
