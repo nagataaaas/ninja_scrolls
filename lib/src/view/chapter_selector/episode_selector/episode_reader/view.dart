@@ -215,7 +215,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       listObserverController.animateTo(
           index: index - 1,
           duration: const Duration(milliseconds: 500),
-          alignment: 0.5,
+          alignment: 1,
           curve: Curves.easeOut);
     });
   }
@@ -546,6 +546,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
               horizontal: context.textTheme.bodyLarge!.lineHeightPixel! * 1.5),
           child: HtmlWidget(
             key: key,
+            ringo: ringo,
             element: content[index],
             selfIndex: index,
             middleItemIndexStream: middleItemIndexStreamController.stream,

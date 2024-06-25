@@ -19,15 +19,16 @@ import 'package:provider/provider.dart';
 import 'package:ringo/ringo.dart';
 import 'package:widget_zoom/widget_zoom.dart';
 
-Ringo? ringo;
 final htmlUnescape = HtmlUnescape();
 
 class HtmlWidget extends StatefulWidget {
   final int selfIndex;
+  final Ringo? ringo;
   final dom.Element element;
   final Stream<int> middleItemIndexStream;
   const HtmlWidget(
       {super.key,
+      required this.ringo,
       required this.selfIndex,
       required this.element,
       required this.middleItemIndexStream});
@@ -54,9 +55,6 @@ class _HtmlWidgetState extends State<HtmlWidget> {
         isMiddle = !isMiddle;
       });
     });
-    if (ringo == null) {
-      Ringo.init().then((rin) => ringo = rin);
-    }
   }
 
   @override
@@ -114,7 +112,7 @@ class _HtmlWidgetState extends State<HtmlWidget> {
     for (final sentence in sentences) {
       if (sentence.isEmpty) continue;
 
-      final tokenized = ringo?.tokenize(sentence);
+      final tokenized = widget.ringo?.tokenize(sentence);
       if (tokenized == null || tokenized.isEmpty) continue;
 
       final wikiIndexProvider = context.read<WikiIndexProvider>();

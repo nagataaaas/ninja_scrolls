@@ -39,89 +39,95 @@ class _SettingsViewState extends State<SettingsView> {
         onRefresh: () async => setState(() {}),
         child: Scrollbar(
           controller: scrollController,
-          child: ListView(
-            controller: scrollController,
-            children: [
-              SettingsList(
-                contentPadding: EdgeInsetsDirectional.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                lightTheme: context
-                    .watch<ThemeProvider>()
-                    .lightTheme
-                    .theme
-                    .settingsThemeData,
-                darkTheme: context
-                    .watch<ThemeProvider>()
-                    .darkTheme
-                    .theme
-                    .settingsThemeData,
-                sections: [
-                  SettingsSection(
-                    margin: EdgeInsetsDirectional.only(top: 32),
-                    title: Text('視覚設定', style: context.textTheme.bodyMedium),
-                    tiles: <SettingsTile>[
-                      SettingsTile.navigation(
-                        leading: Icon(Icons.contrast),
-                        title:
-                            Text('テーマ', style: context.textTheme.headlineSmall),
-                        value: Text(
-                            {
-                              AdaptiveThemeMode.system: 'OS設定に従う',
-                              AdaptiveThemeMode.light:
-                                  'ライト (${context.watch<ThemeProvider>().lightTheme.name})',
-                              AdaptiveThemeMode.dark:
-                                  'ダーク (${context.watch<ThemeProvider>().darkTheme.name})'
-                            }[AdaptiveTheme.of(context).mode]!,
-                            style: context.textTheme.bodyMedium),
-                        onPressed: (context) {
-                          GoRouter.of(context).go(Routes.settingThemeRoute);
-                        },
-                      ),
-                      SettingsTile.navigation(
-                        leading: Icon(Icons.animation),
-                        title: Text('リッチアニメーション'),
-                        value: Text({null: 'OS設定に従う', true: 'する', false: 'しない'}[
-                            context
-                                .watch<UserSettingsProvider>()
-                                .rawRichAnimationEnabled]!),
-                        onPressed: (context) {
-                          GoRouter.of(context).go(Routes.settingAnimationRoute);
-                        },
-                      ),
-                    ],
+          child: SafeArea(
+            child: ListView(
+              controller: scrollController,
+              children: [
+                SettingsList(
+                  contentPadding: EdgeInsetsDirectional.zero,
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  lightTheme: context
+                      .watch<ThemeProvider>()
+                      .lightTheme
+                      .theme
+                      .settingsThemeData,
+                  darkTheme: context
+                      .watch<ThemeProvider>()
+                      .darkTheme
+                      .theme
+                      .settingsThemeData,
+                  sections: [
+                    SettingsSection(
+                      margin: EdgeInsetsDirectional.only(top: 32),
+                      title: Text('視覚設定', style: context.textTheme.bodyMedium),
+                      tiles: <SettingsTile>[
+                        SettingsTile.navigation(
+                          leading: Icon(Icons.contrast),
+                          title: Text('テーマ',
+                              style: context.textTheme.headlineSmall),
+                          value: Text(
+                              {
+                                AdaptiveThemeMode.system: 'OS設定に従う',
+                                AdaptiveThemeMode.light:
+                                    'ライト (${context.watch<ThemeProvider>().lightTheme.name})',
+                                AdaptiveThemeMode.dark:
+                                    'ダーク (${context.watch<ThemeProvider>().darkTheme.name})'
+                              }[AdaptiveTheme.of(context).mode]!,
+                              style: context.textTheme.bodyMedium),
+                          onPressed: (context) {
+                            GoRouter.of(context).go(Routes.settingThemeRoute);
+                          },
+                        ),
+                        SettingsTile.navigation(
+                          leading: Icon(Icons.animation),
+                          title: Text('リッチアニメーション'),
+                          value: Text({
+                            null: 'OS設定に従う',
+                            true: 'する',
+                            false: 'しない'
+                          }[context
+                              .watch<UserSettingsProvider>()
+                              .rawRichAnimationEnabled]!),
+                          onPressed: (context) {
+                            GoRouter.of(context)
+                                .go(Routes.settingAnimationRoute);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SettingsDataView(),
+                AppInfoView(),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Ⓒ 2024 nagataaaas',
+                    style: context.textTheme.bodySmall,
                   ),
-                ],
-              ),
-              SettingsDataView(),
-              AppInfoView(),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Ⓒ 2024 nagataaaas',
-                  style: context.textTheme.bodySmall,
                 ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: BudouX.budou(
-                  context,
-                  '※本アプリケーションで提供する 各物語部の画像・アイキャッチ画像・タイトル・本文等は ダイハードテイルズ出版局( 𝕏[旧Twitter]: @njslyr または @dhtls ) が著作・権利を保有するものです。',
-                  style: context.textTheme.bodySmall,
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: BudouX.budou(
+                    context,
+                    '※本アプリケーションで提供する 各物語部の画像・アイキャッチ画像・タイトル・本文等は ダイハードテイルズ出版局( 𝕏[旧Twitter]: @njslyr または @dhtls ) が著作・権利を保有するものです。',
+                    style: context.textTheme.bodySmall,
+                  ),
                 ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: BudouX.budou(
-                  context,
-                  '※本アプリケーション内から閲覧できる ニンジャスレイヤー Wiki は有志により運営されているものであり、本アプリの著作者は権利を有していません。',
-                  style: context.textTheme.bodySmall,
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: BudouX.budou(
+                    context,
+                    '※本アプリケーション内から閲覧できる ニンジャスレイヤー Wiki は有志により運営されているものであり、本アプリの著作者は権利を有していません。',
+                    style: context.textTheme.bodySmall,
+                  ),
                 ),
-              ),
-              SizedBox(height: 32),
-            ],
+                SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

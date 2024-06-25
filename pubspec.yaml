@@ -64,12 +64,12 @@ dependencies:
     webview_windows: ^0.3.0
     flutter_hooks: ^0.20.4
     collection: ^1.17.2
-    ringo: ^0.0.2
     widget_zoom: ^0.0.4
     async: ^2.11.0
     flutter_native_splash: ^2.4.0
     scrollable_positioned_list: ^0.3.8
     scrollview_observer: ^1.20.0
+    ringo: ^0.0.2
 
 dev_dependencies:
     flutter_test:
