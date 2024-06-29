@@ -1,5 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ninja_scrolls/budoux/budoux.dart';
 import 'package:ninja_scrolls/extentions.dart';
@@ -121,6 +122,25 @@ class _SettingsViewState extends State<SettingsView> {
                     context,
                     '※本アプリケーション内から閲覧できる ニンジャスレイヤー Wiki は有志により運営されているものであり、本アプリの著作者は権利を有していません。',
                     style: context.textTheme.bodySmall,
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: GestureDetector(
+                    onTap: () {
+                      ChromeSafariBrowser().open(
+                        url: WebUri.uri(Uri.https('github.com',
+                            '/nagataaaas/ninja_scrolls/blob/main/PRIVACY_POLICY.MD')),
+                      );
+                    },
+                    child: BudouX.budou(
+                      context,
+                      'プライバシーポリシーはこちらからご確認ください。',
+                      style: context.textTheme.bodySmall!.copyWith(
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   ),
                 ),
                 SizedBox(height: 32),
