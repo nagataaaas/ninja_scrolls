@@ -70,6 +70,7 @@ dependencies:
     scrollview_observer: ^1.20.0
     ringo: ^0.0.2
     flutter_inappwebview: ^6.0.0
+    share_plus: ^11.0.0
 
 dev_dependencies:
     flutter_test:
