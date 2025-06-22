@@ -185,7 +185,9 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
   Future<void> saveCurrentProgress() async {
     if (!scrollController.hasClients ||
-        !scrollController.position.hasContentDimensions) return;
+        !scrollController.position.hasContentDimensions) {
+      return;
+    }
 
     final maxHeight = scrollController.position.maxScrollExtent;
     final currentHeight = scrollController.position.pixels;
@@ -248,14 +250,15 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
   void _shareEpisode() {
     try {
       final episodeIndexProvider = context.read<EpisodeIndexProvider>();
-      
+
       // Get episode details
       final episodeTitle = episode.title;
-      
+
       // Get chapter (season) information
-      final chapter = episodeIndexProvider.getChapterById(widget.argument.chapterId);
+      final chapter =
+          episodeIndexProvider.getChapterById(widget.argument.chapterId);
       final chapterId = chapter?.id ?? widget.argument.chapterId;
-      
+
       // Map chapter ID to season: 第1,2,3部 -> シーズン1~, index 4+ -> シーズン1~
       String seasonText;
       if (chapterId <= 2) {
@@ -265,41 +268,44 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         // Index 4+ maps to シーズン1,2,3...
         seasonText = 'シーズン${chapterId - 2}';
       }
-      
+
       // Generate web URL using episode ID
       final webUrl = 'https://diehardtales.com/n/${widget.argument.episodeId}';
-      
+
       // Create share text
-      final shareText = '''NinjaScrollsでニンジャスレイヤーの$seasonText, 「$episodeTitle」を読んでいます！
+      final shareText =
+          '''NinjaScrollsでニンジャスレイヤーの$seasonText, 「$episodeTitle」を読んでいます！
 
 iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
 Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
 Web: $webUrl''';
-      
+
       // Get the render box for the share button to fix iOS positioning
       final RenderBox? box = context.findRenderObject() as RenderBox?;
-      final Rect sharePositionOrigin = box != null 
+      final Rect sharePositionOrigin = box != null
           ? box.localToGlobal(Offset.zero) & box.size
           : const Rect.fromLTWH(0, 0, 1, 1);
-      
-      Share.share(
-        shareText,
+
+      SharePlus.instance.share(ShareParams(
+        text: shareText,
+        subject: 'NinjaScrollsでニンジャスレイヤーを読んでいます！',
         sharePositionOrigin: sharePositionOrigin,
-      );
+      ));
     } catch (e) {
       // Fallback share text if something goes wrong
       final RenderBox? box = context.findRenderObject() as RenderBox?;
-      final Rect sharePositionOrigin = box != null 
+      final Rect sharePositionOrigin = box != null
           ? box.localToGlobal(Offset.zero) & box.size
           : const Rect.fromLTWH(0, 0, 1, 1);
-          
-      Share.share(
-        '''NinjaScrollsでニンジャスレイヤーを読んでいます！
 
+      SharePlus.instance.share(ShareParams(
+        text: '''NinjaScrollsでニンジャスレイヤーを読んでいます！
 iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
-Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls''',
+Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
+Web: https://diehardtales.com/n/${widget.argument.episodeId}''',
+        subject: 'NinjaScrollsでニンジャスレイヤーを読んでいます！',
         sharePositionOrigin: sharePositionOrigin,
-      );
+      ));
     }
   }
 
@@ -340,8 +346,9 @@ Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls'
                                           color: context.colorTheme.primary)),
                                   IconButton(
                                       onPressed: () async {
-                                        context.read<ScaffoldProvider>().endDrawer =
-                                            buildEndDrawer();
+                                        context
+                                            .read<ScaffoldProvider>()
+                                            .endDrawer = buildEndDrawer();
                                       },
                                       icon: Icon(Icons.refresh,
                                           color: context.colorTheme.primary))
@@ -361,7 +368,6 @@ Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls'
                                   ?.findRenderObject() as RenderBox?;
                               if (listViewBox == null) return;
                               final offset = listViewBox.size.height / 2;
-                              ;
                               final index = content.indexWhere((element) {
                                     return element.attributes['name'] == e.id;
                                   }) +
@@ -495,7 +501,9 @@ Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls'
                         .then((_) => completer.complete());
                     if (!mounted) return;
                     if (!await createLoadingIndicatorOnSetting(
-                        context, completer)) return;
+                        context, completer)) {
+                      return;
+                    }
                   }
                   if (!mounted) return;
                   GoRouter.of(context).goNamed(
@@ -624,7 +632,7 @@ Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls'
   }
 
   Widget widgetAtIndex(int index, BoxConstraints bodyConstraints) {
-    int _index = index;
+    int prev_index = index;
     if (globalKeys.length <= index) {
       for (int i = globalKeys.length; i <= index; i++) {
         globalKeys
@@ -634,13 +642,13 @@ Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls'
     final key = globalKeys[index];
 
     if (note?.eyecatchUrl != null) {
-      if (--_index < 0) {
+      if (--prev_index < 0) {
         return buildEyeCatch(key, bodyConstraints);
       }
     }
     if (document != null) {
-      if (_index < content.length) {
-        final element = content[_index];
+      if (prev_index < content.length) {
+        final element = content[prev_index];
         keyByItemId[element.attributes['name'] ?? element.innerHtml] = key;
 
         return Padding(
@@ -649,23 +657,23 @@ Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls'
           child: HtmlWidget(
             key: key,
             ringo: ringo,
-            element: content[_index],
+            element: content[prev_index],
             selfIndex: index,
             middleItemIndexStream: middleItemIndexStreamController.stream,
           ),
         );
       }
-      _index -= content.length;
+      prev_index -= content.length;
     }
     if ((note?.remainedCharNum ?? 0) != 0) {
-      if (--_index < 0) {
+      if (--prev_index < 0) {
         return buildPaidMembershipRequiredBlock(key);
       }
     }
-    if (--_index < 0) {
+    if (--prev_index < 0) {
       return buildNavigationButtons(key, bodyConstraints);
     }
-    if (--_index < 0) {
+    if (--prev_index < 0) {
       return SizedBox(key: key, height: 20);
     }
     return Container(
