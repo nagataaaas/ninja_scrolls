@@ -30,6 +30,7 @@ import 'package:ninja_scrolls/src/view/components/swipe_to_pop_container.dart';
 import 'package:provider/provider.dart';
 import 'package:ringo/ringo.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:widget_zoom/widget_zoom.dart';
 
@@ -244,6 +245,37 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
         heroAnimationTag: url, zoomWidget: CachedNetworkImage(imageUrl: url));
   }
 
+  void _shareEpisode() {
+    try {
+      final episodeIndexProvider = context.read<EpisodeIndexProvider>();
+      
+      // Get episode details
+      final episodeTitle = episode.title;
+      
+      // Get chapter (season) information - make it 1-indexed
+      final chapter = episodeIndexProvider.getChapterById(widget.argument.chapterId);
+      final seasonNumber = (chapter?.id ?? widget.argument.chapterId) + 1;
+      
+      // Generate web URL using episode ID
+      final webUrl = 'https://diehardtales.com/n/${widget.argument.episodeId}';
+      
+      // Create share text
+      final shareText = '''NinjaScrollsでニンジャスレイヤーのシーズン$seasonNumber, 「$episodeTitle」を読んでいます！
+
+iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
+Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
+Web: $webUrl''';
+      
+      Share.share(shareText);
+    } catch (e) {
+      // Fallback share text if something goes wrong
+      Share.share('''NinjaScrollsでニンジャスレイヤーを読んでいます！
+
+iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
+Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls''');
+    }
+  }
+
   Widget buildEndDrawer() {
     if (!mounted) return Container();
     return Builder(builder: (context) {
@@ -272,13 +304,22 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
                                     color:
                                         context.textTheme.headlineMedium?.color,
                                   )),
-                              IconButton(
-                                  onPressed: () async {
-                                    context.read<ScaffoldProvider>().endDrawer =
-                                        buildEndDrawer();
-                                  },
-                                  icon: Icon(Icons.refresh,
-                                      color: context.colorTheme.primary))
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                      onPressed: () => _shareEpisode(),
+                                      icon: Icon(Icons.share,
+                                          color: context.colorTheme.primary)),
+                                  IconButton(
+                                      onPressed: () async {
+                                        context.read<ScaffoldProvider>().endDrawer =
+                                            buildEndDrawer();
+                                      },
+                                      icon: Icon(Icons.refresh,
+                                          color: context.colorTheme.primary))
+                                ],
+                              )
                             ],
                           ),
                         ),
