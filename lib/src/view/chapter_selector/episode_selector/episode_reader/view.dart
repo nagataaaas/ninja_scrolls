@@ -252,27 +252,54 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       // Get episode details
       final episodeTitle = episode.title;
       
-      // Get chapter (season) information - make it 1-indexed
+      // Get chapter (season) information
       final chapter = episodeIndexProvider.getChapterById(widget.argument.chapterId);
-      final seasonNumber = (chapter?.id ?? widget.argument.chapterId) + 1;
+      final chapterId = chapter?.id ?? widget.argument.chapterId;
+      
+      // Map chapter ID to season: 第1,2,3部 -> シーズン1~, index 4+ -> シーズン1~
+      String seasonText;
+      if (chapterId <= 2) {
+        // 第1,2,3部 maps to シーズン1,2,3
+        seasonText = 'シーズン${chapterId + 1}';
+      } else {
+        // Index 4+ maps to シーズン1,2,3...
+        seasonText = 'シーズン${chapterId - 2}';
+      }
       
       // Generate web URL using episode ID
       final webUrl = 'https://diehardtales.com/n/${widget.argument.episodeId}';
       
       // Create share text
-      final shareText = '''NinjaScrollsでニンジャスレイヤーのシーズン$seasonNumber, 「$episodeTitle」を読んでいます！
+      final shareText = '''NinjaScrollsでニンジャスレイヤーの$seasonText, 「$episodeTitle」を読んでいます！
 
 iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
 Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
 Web: $webUrl''';
       
-      Share.share(shareText);
+      // Get the render box for the share button to fix iOS positioning
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+      final Rect sharePositionOrigin = box != null 
+          ? box.localToGlobal(Offset.zero) & box.size
+          : const Rect.fromLTWH(0, 0, 1, 1);
+      
+      Share.share(
+        shareText,
+        sharePositionOrigin: sharePositionOrigin,
+      );
     } catch (e) {
       // Fallback share text if something goes wrong
-      Share.share('''NinjaScrollsでニンジャスレイヤーを読んでいます！
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+      final Rect sharePositionOrigin = box != null 
+          ? box.localToGlobal(Offset.zero) & box.size
+          : const Rect.fromLTWH(0, 0, 1, 1);
+          
+      Share.share(
+        '''NinjaScrollsでニンジャスレイヤーを読んでいます！
 
 iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
-Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls''');
+Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls''',
+        sharePositionOrigin: sharePositionOrigin,
+      );
     }
   }
 
