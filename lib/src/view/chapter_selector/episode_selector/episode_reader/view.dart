@@ -263,7 +263,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
       String seasonText;
       if (chapterId <= 2) {
         // 第1,2,3部 maps to シーズン1,2,3
-        seasonText = 'シーズン${chapterId + 1}';
+        seasonText = '第${chapterId + 1}部';
       } else {
         // Index 4+ maps to シーズン1,2,3...
         seasonText = 'シーズン${chapterId - 2}';
@@ -274,7 +274,7 @@ class EpisodeReaderViewState extends State<EpisodeReaderView> {
 
       // Create share text
       final shareText =
-          '''NinjaScrollsでニンジャスレイヤーの$seasonText, 「$episodeTitle」を読んでいます！
+          '''NinjaScrollsでニンジャスレイヤーの$seasonText 「$episodeTitle」を読んでいます！
 
 iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E3%82%BA/id6504796782
 Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
@@ -304,7 +304,6 @@ iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9
 Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
 Web: https://diehardtales.com/n/${widget.argument.episodeId}''',
         subject: 'NinjaScrollsでニンジャスレイヤーを読んでいます！',
-        sharePositionOrigin: sharePositionOrigin,
       ));
     }
   }

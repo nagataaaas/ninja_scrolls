@@ -102,7 +102,7 @@ class _SettingsViewState extends State<SettingsView> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Ⓒ 2024 nagataaaas',
+                    'Ⓒ 2024-2025 nagataaaas',
                     style: context.textTheme.bodySmall,
                   ),
                 ),
