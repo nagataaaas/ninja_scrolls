@@ -283,7 +283,8 @@ Web: $webUrl''';
       // Get the render box for the share button to fix iOS positioning
       final RenderBox? box = context.findRenderObject() as RenderBox?;
       final Rect sharePositionOrigin = box != null
-          ? box.localToGlobal(Offset.zero) & box.size
+          ? box.localToGlobal(Offset.zero) &
+              Size(box.size.width, box.size.height / 3)
           : const Rect.fromLTWH(0, 0, 1, 1);
 
       SharePlus.instance.share(ShareParams(
@@ -295,7 +296,8 @@ Web: $webUrl''';
       // Fallback share text if something goes wrong
       final RenderBox? box = context.findRenderObject() as RenderBox?;
       final Rect sharePositionOrigin = box != null
-          ? box.localToGlobal(Offset.zero) & box.size
+          ? box.localToGlobal(Offset.zero) &
+              Size(box.size.width, box.size.height / 3)
           : const Rect.fromLTWH(0, 0, 1, 1);
 
       SharePlus.instance.share(ShareParams(

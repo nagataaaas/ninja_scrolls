@@ -15,6 +15,12 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
     	<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+			<key>NSAllowsArbitraryLoadsInWebContent</key>
+			<true/>
+		</dict>
 		<key>io.flutter.embedded_views_preview</key>
 		<string>YES</string>
 		<key>CFBundleName</key>
@@ -28,12 +34,6 @@
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSApplicationQueriesSchemes</key>
-		<dict>
-			<key>NSAllowsArbitraryLoads</key>
-			<true/>
-			<key>NSAllowsArbitraryLoadsInWebContent</key>
-			<true/>
-		</dict>
 		<array>
 			<string>https</string>
 			<string>http</string>

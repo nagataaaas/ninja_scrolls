@@ -54,7 +54,7 @@ dependencies:
     package_info_plus: ^4.2.0
     adaptive_theme: ^3.4.1
     cached_network_image: ^3.3.0
-    url_launcher: ^6.3.0
+    url_launcher: ^6.3.1
     flutter_svg: ^2.0.9
     html_unescape: ^2.0.0
     flutter_cache_manager: ^3.3.1
