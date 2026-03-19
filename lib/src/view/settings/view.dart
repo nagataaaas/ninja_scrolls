@@ -1,6 +1,5 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ninja_scrolls/budoux/budoux.dart';
 import 'package:ninja_scrolls/extentions.dart';
@@ -11,6 +10,7 @@ import 'package:ninja_scrolls/src/view/settings/components/app_info/view.dart';
 import 'package:ninja_scrolls/src/view/settings/components/data/view.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -129,9 +129,10 @@ class _SettingsViewState extends State<SettingsView> {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: GestureDetector(
                     onTap: () {
-                      ChromeSafariBrowser().open(
-                        url: WebUri.uri(Uri.https(
-                            'app.nagata.pro', '/ninja-scrolls/privacy-policy')),
+                      launchUrl(
+                        Uri.https(
+                            'app.nagata.pro', '/ninja-scrolls/privacy-policy'),
+                        mode: LaunchMode.inAppBrowserView,
                       );
                     },
                     child: BudouX.budou(
