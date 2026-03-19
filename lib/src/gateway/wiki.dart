@@ -41,7 +41,9 @@ class WikiNetworkGateway {
       '相談所',
       '関連ハッシュタグ等',
       '雑談場'
-    ].contains(title)) return false;
+    ].contains(title)) {
+      return false;
+    }
 
     return true;
   }

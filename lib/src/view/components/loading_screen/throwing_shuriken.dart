@@ -19,7 +19,7 @@ Future<bool> createThrowingShuriken(Completer<void> completer) async {
     context: rootNavigatorKey.currentContext!,
     builder: (context) {
       return PopScope(
-        onPopInvoked: (didPop) async {
+        onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
           if (!successCompleter.isCompleted) successCompleter.complete(false);
           ensurePopped(context);

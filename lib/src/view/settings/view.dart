@@ -130,8 +130,8 @@ class _SettingsViewState extends State<SettingsView> {
                   child: GestureDetector(
                     onTap: () {
                       ChromeSafariBrowser().open(
-                        url: WebUri.uri(Uri.https('github.com',
-                            '/nagataaaas/ninja_scrolls/blob/main/PRIVACY_POLICY.MD')),
+                        url: WebUri.uri(Uri.https(
+                            'app.nagata.pro', '/ninja-scrolls/privacy-policy')),
                       );
                     },
                     child: BudouX.budou(

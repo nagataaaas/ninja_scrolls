@@ -70,11 +70,11 @@ extension ThemeDataSettingsThemeDataExt on ThemeData {
       trailingTextColor: colorScheme.primary,
       settingsListBackground: colorScheme.surface,
       settingsSectionBackground: colorScheme.surface,
-      dividerColor: colorScheme.primary.withOpacity(0.7),
-      tileHighlightColor: colorScheme.primary.withOpacity(0.3),
+      dividerColor: colorScheme.primary.withValues(alpha: 0.7),
+      tileHighlightColor: colorScheme.primary.withValues(alpha: 0.3),
       titleTextColor: colorScheme.primary,
       leadingIconsColor: colorScheme.primary,
-      tileDescriptionTextColor: colorScheme.primary.withOpacity(0.5),
+      tileDescriptionTextColor: colorScheme.primary.withValues(alpha: 0.5),
       settingsTileTextColor: colorScheme.primary,
     );
   }

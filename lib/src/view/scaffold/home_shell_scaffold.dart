@@ -124,9 +124,11 @@ class _HomeShellScaffoldState extends State<HomeShellScaffold> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userSettingsProvider = context.read<UserSettingsProvider>();
+      final adaptiveTheme = AdaptiveTheme.of(context);
       userSettingsProvider.ensureInitialized().then(
         (_) {
-          AdaptiveTheme.of(context).setTheme(
+          if (!mounted) return;
+          adaptiveTheme.setTheme(
             light: userSettingsProvider.lightTheme.theme,
             dark: userSettingsProvider.darkTheme.theme,
           );

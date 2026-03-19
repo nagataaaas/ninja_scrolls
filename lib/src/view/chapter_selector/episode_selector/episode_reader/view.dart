@@ -22,7 +22,7 @@ import 'package:ninja_scrolls/src/providers/scaffold_provider.dart';
 import 'package:ninja_scrolls/src/providers/theme_provider.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
 import 'package:ninja_scrolls/src/static/routes.dart';
-import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/episode_reader/components/htmlWidget.dart';
+import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/episode_reader/components/html_widget.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/episode_selector/view.dart';
 import 'package:ninja_scrolls/src/view/chapter_selector/read_history/view.dart';
 import 'package:ninja_scrolls/src/view/components/loading_screen/create_loading_indicator_on_setting.dart';
@@ -282,23 +282,18 @@ Web: $webUrl''';
 
       // Get the render box for the share button to fix iOS positioning
       final RenderBox? box = context.findRenderObject() as RenderBox?;
-      final Rect sharePositionOrigin = box != null
-          ? box.localToGlobal(Offset.zero) &
-              Size(box.size.width, box.size.height / 3)
-          : const Rect.fromLTWH(0, 0, 1, 1);
 
       SharePlus.instance.share(ShareParams(
         text: shareText,
         subject: 'NinjaScrollsでニンジャスレイヤーを読んでいます！',
-        sharePositionOrigin: sharePositionOrigin,
+        sharePositionOrigin: box != null
+            ? box.localToGlobal(Offset.zero) &
+                Size(box.size.width, box.size.height / 3)
+            : const Rect.fromLTWH(0, 0, 1, 1),
       ));
     } catch (e) {
       // Fallback share text if something goes wrong
       final RenderBox? box = context.findRenderObject() as RenderBox?;
-      final Rect sharePositionOrigin = box != null
-          ? box.localToGlobal(Offset.zero) &
-              Size(box.size.width, box.size.height / 3)
-          : const Rect.fromLTWH(0, 0, 1, 1);
 
       SharePlus.instance.share(ShareParams(
         text: '''NinjaScrollsでニンジャスレイヤーを読んでいます！
@@ -306,6 +301,10 @@ iOS: https://apps.apple.com/us/app/%E3%83%8B%E3%83%B3%E3%82%B8%E3%83%A3%E3%82%B9
 Android: https://play.google.com/store/apps/details?id=pro.nagata.ninja_scrolls
 Web: https://diehardtales.com/n/${widget.argument.episodeId}''',
         subject: 'NinjaScrollsでニンジャスレイヤーを読んでいます！',
+        sharePositionOrigin: box != null
+            ? box.localToGlobal(Offset.zero) &
+                Size(box.size.width, box.size.height / 3)
+            : const Rect.fromLTWH(0, 0, 1, 1),
       ));
     }
   }
@@ -633,7 +632,7 @@ Web: https://diehardtales.com/n/${widget.argument.episodeId}''',
   }
 
   Widget widgetAtIndex(int index, BoxConstraints bodyConstraints) {
-    int prev_index = index;
+    int prevIndex = index;
     if (globalKeys.length <= index) {
       for (int i = globalKeys.length; i <= index; i++) {
         globalKeys
@@ -643,13 +642,13 @@ Web: https://diehardtales.com/n/${widget.argument.episodeId}''',
     final key = globalKeys[index];
 
     if (note?.eyecatchUrl != null) {
-      if (--prev_index < 0) {
+      if (--prevIndex < 0) {
         return buildEyeCatch(key, bodyConstraints);
       }
     }
     if (document != null) {
-      if (prev_index < content.length) {
-        final element = content[prev_index];
+      if (prevIndex < content.length) {
+        final element = content[prevIndex];
         keyByItemId[element.attributes['name'] ?? element.innerHtml] = key;
 
         return Padding(
@@ -658,23 +657,23 @@ Web: https://diehardtales.com/n/${widget.argument.episodeId}''',
           child: HtmlWidget(
             key: key,
             ringo: ringo,
-            element: content[prev_index],
+            element: content[prevIndex],
             selfIndex: index,
             middleItemIndexStream: middleItemIndexStreamController.stream,
           ),
         );
       }
-      prev_index -= content.length;
+      prevIndex -= content.length;
     }
     if ((note?.remainedCharNum ?? 0) != 0) {
-      if (--prev_index < 0) {
+      if (--prevIndex < 0) {
         return buildPaidMembershipRequiredBlock(key);
       }
     }
-    if (--prev_index < 0) {
+    if (--prevIndex < 0) {
       return buildNavigationButtons(key, bodyConstraints);
     }
-    if (--prev_index < 0) {
+    if (--prevIndex < 0) {
       return SizedBox(key: key, height: 20);
     }
     return Container(

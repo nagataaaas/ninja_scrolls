@@ -8,32 +8,33 @@ Future<bool> createCircuarIndicator(Completer<void> completer) async {
   final Completer<bool> successCompleter = Completer<bool>();
   bool popped = false;
 
-  void ensurePopped(BuildContext context) {
+  void ensurePopped(NavigatorState navigator) {
     if (!popped) {
       popped = true;
-      Navigator.of(context).pop();
+      navigator.pop();
     }
   }
 
   showDialog<void>(
     context: rootNavigatorKey.currentContext!,
-    builder: (context) {
+    builder: (dialogContext) {
+      final navigator = Navigator.of(dialogContext);
       completer.future.then((value) {
         if (!successCompleter.isCompleted) successCompleter.complete(true);
-        ensurePopped(context);
+        ensurePopped(navigator);
       });
       return PopScope(
-        onPopInvoked: (didPop) async {
+        onPopInvokedWithResult: (didPop, _) async {
           if (didPop) return;
           if (!successCompleter.isCompleted) successCompleter.complete(false);
-          ensurePopped(context);
+          ensurePopped(navigator);
         },
         child: GestureDetector(
             onTap: () {
               if (!successCompleter.isCompleted) {
                 successCompleter.complete(false);
               }
-              ensurePopped(context);
+              ensurePopped(navigator);
             },
             child: Center(child: CircularProgressIndicator.adaptive())),
       );

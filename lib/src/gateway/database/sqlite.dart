@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:ninja_scrolls/src/gateway/database/episode_search_history.dart';
 import 'package:ninja_scrolls/src/gateway/database/note.dart';
 import 'package:ninja_scrolls/src/gateway/database/read_state.dart';
@@ -22,6 +23,9 @@ class DatabaseHelper {
 
   static Database? _database;
   late String _path;
+
+  @visibleForTesting
+  static set testDatabase(Database? db) => _database = db;
 
   Future<void> ensureInitialized() async {
     if (_database != null) return;

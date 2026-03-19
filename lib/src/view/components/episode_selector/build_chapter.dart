@@ -39,7 +39,7 @@ Widget buildChapter(BuildContext context, Chapter chapter,
               width: context.screenWidth,
               child: Image.asset(chapter.imagePath, fit: BoxFit.contain),
             ),
-            Container(color: context.colorTheme.surface.withOpacity(0.8)),
+            Container(color: context.colorTheme.surface.withValues(alpha: 0.8)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: rem / 2),
               child: Column(
@@ -75,7 +75,7 @@ Widget buildChapter(BuildContext context, Chapter chapter,
         ),
       ),
       Divider(
-          color: context.colorTheme.primary.withOpacity(0.3),
+          color: context.colorTheme.primary.withValues(alpha: 0.3),
           thickness: 1,
           height: 0),
     ],

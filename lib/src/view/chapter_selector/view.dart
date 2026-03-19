@@ -33,7 +33,7 @@ class ChapterSelectorView extends HookWidget {
             width: context.screenWidth,
             child: Image.asset(Assets.bannersNinjaslayerLogo, fit: BoxFit.fill),
           ),
-          Container(color: Common.black.withOpacity(0.5)),
+          Container(color: Common.black.withValues(alpha: 0.5)),
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,

@@ -69,7 +69,6 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => userSettingsProvider),
           ChangeNotifierProvider(create: (_) => episodeIndexProvider),
           ChangeNotifierProvider(create: (_) => themeProvider),
-          ChangeNotifierProvider(create: (_) => themeProvider),
           ChangeNotifierProvider(create: (_) => wikiIndexProvider),
         ],
         child: AdaptiveTheme(

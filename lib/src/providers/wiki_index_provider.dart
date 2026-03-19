@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ninja_scrolls/src/gateway/database/wiki.dart';
 import 'package:ninja_scrolls/src/gateway/wiki.dart';
@@ -89,6 +90,13 @@ class WikiIndexProvider extends ChangeNotifier {
         if (matchRateCompare != 0) return matchRateCompare;
         return -a.page.title.length.compareTo(b.page.title.length);
       });
+  }
+
+  @visibleForTesting
+  void setWikiPagesForTest(List<WikiPage> pages) {
+    _wikiPages = pages;
+    _wikiPagesLoaded = true;
+    buildMap();
   }
 
   Future<List<WikiPage>?> ensureWikiPagesLoaded() async {

@@ -93,12 +93,12 @@ class _SettingsThemeViewState extends State<SettingsThemeView> {
                   );
                   if (result != null &&
                       mounted &&
-                      context.read<ThemeProvider>().lightTheme != result) {
-                    context.read<ThemeProvider>().lightTheme = result;
+                      this.context.read<ThemeProvider>().lightTheme != result) {
+                    this.context.read<ThemeProvider>().lightTheme = result;
                     final userSettingsProvider =
-                        context.read<UserSettingsProvider>();
+                        this.context.read<UserSettingsProvider>();
                     userSettingsProvider.lightTheme = result;
-                    AdaptiveTheme.of(context).setTheme(
+                    AdaptiveTheme.of(this.context).setTheme(
                       light: userSettingsProvider.lightTheme.theme,
                       dark: userSettingsProvider.darkTheme.theme,
                     );
@@ -120,12 +120,12 @@ class _SettingsThemeViewState extends State<SettingsThemeView> {
                   );
                   if (result != null &&
                       mounted &&
-                      context.read<ThemeProvider>().darkTheme != result) {
-                    context.read<ThemeProvider>().darkTheme = result;
+                      this.context.read<ThemeProvider>().darkTheme != result) {
+                    this.context.read<ThemeProvider>().darkTheme = result;
                     final userSettingsProvider =
-                        context.read<UserSettingsProvider>();
+                        this.context.read<UserSettingsProvider>();
                     userSettingsProvider.darkTheme = result;
-                    AdaptiveTheme.of(context).setTheme(
+                    AdaptiveTheme.of(this.context).setTheme(
                       light: userSettingsProvider.lightTheme.theme,
                       dark: userSettingsProvider.darkTheme.theme,
                     );

@@ -126,7 +126,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: context.colorTheme.primary.withOpacity(0.05),
+          color: context.colorTheme.primary.withValues(alpha: 0.05),
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
@@ -153,7 +153,7 @@ class EpisodeSelectorViewState extends State<EpisodeSelectorView> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
-          color: context.colorTheme.secondary.withOpacity(0.1),
+          color: context.colorTheme.secondary.withValues(alpha: 0.1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),

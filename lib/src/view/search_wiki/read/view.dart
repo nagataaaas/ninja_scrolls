@@ -149,7 +149,7 @@ class _SearchWikiReadViewState extends State<SearchWikiReadView> {
           icon: Icon(
             Icons.arrow_back_ios,
             color: context.colorTheme.primary
-                .withOpacity(navigatorAvailability.canGoBack ? 1 : 0.3),
+                .withValues(alpha: navigatorAvailability.canGoBack ? 1 : 0.3),
           ),
           onPressed: () async {
             if (Platform.isWindows) {
@@ -163,7 +163,7 @@ class _SearchWikiReadViewState extends State<SearchWikiReadView> {
           icon: Icon(
             Icons.arrow_forward_ios,
             color: context.colorTheme.primary
-                .withOpacity(navigatorAvailability.canGoForward ? 1 : 0.3),
+                .withValues(alpha: navigatorAvailability.canGoForward ? 1 : 0.3),
           ),
           onPressed: () async {
             if (Platform.isWindows) {

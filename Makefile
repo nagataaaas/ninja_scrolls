@@ -1,4 +1,4 @@
-.PHONY: setup lint
+.PHONY: setup lint test test-unit test-widget test-integration
 UNAME := $(shell uname)
 
 lint:
@@ -10,6 +10,18 @@ setup:
 
 profile-sksl:
 	flutter run --profile --cache-sksl --purge-persistent-cache
+
+test:
+	flutter test
+
+test-unit:
+	flutter test test/unit/
+
+test-widget:
+	flutter test test/widget/
+
+test-integration:
+	flutter test test/integration/
 
 build: setup
 ifeq ($(UNAME), Darwin)

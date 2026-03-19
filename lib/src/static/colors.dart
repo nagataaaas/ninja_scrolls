@@ -32,23 +32,23 @@ class Common {
 extension ColorEx on Color {
   Color darken([double amount = .1]) {
     if (amount == 0) return this;
-    if (amount == 1.0) return Colors.black.withAlpha(alpha);
+    if (amount == 1.0) return Colors.black.withValues(alpha: a);
 
     final hsl = HSLColor.fromColor(this);
     final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
 
-    return hslDark.toColor().withAlpha(alpha);
+    return hslDark.toColor().withValues(alpha: a);
   }
 
   Color lighten([double amount = .1]) {
     if (amount == 0) return this;
-    if (amount == 1.0) return Colors.white.withAlpha(alpha);
+    if (amount == 1.0) return Colors.white.withValues(alpha: a);
 
     final hsl = HSLColor.fromColor(this);
     final hslLight =
         hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
 
-    return hslLight.toColor().withAlpha(alpha);
+    return hslLight.toColor().withValues(alpha: a);
   }
 
   Color blend(Color other, double amount) {

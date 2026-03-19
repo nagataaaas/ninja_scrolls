@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ninja_scrolls/src/gateway/note.dart';
 import 'package:ninja_scrolls/src/services/parser/parse_chapters.dart';
@@ -9,6 +10,9 @@ class EpisodeIndexProvider extends ChangeNotifier {
   Index? _index;
 
   Index? get index => _index;
+
+  @visibleForTesting
+  set testIndex(Index? value) => _index = value;
 
   Future<Index> loadIndex() async {
     if (_index == null) {

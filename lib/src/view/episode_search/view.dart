@@ -242,7 +242,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
-          color: context.colorTheme.secondary.withOpacity(0.1),
+          color: context.colorTheme.secondary.withValues(alpha: 0.1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -357,7 +357,7 @@ class _EpisodeSearchViewState extends State<EpisodeSearchView> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         context.read<ScaffoldProvider>().episodeSearchAppBar = null;
       },

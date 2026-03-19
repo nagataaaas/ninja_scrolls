@@ -223,10 +223,9 @@ class _SettingsDataViewState extends State<SettingsDataView> {
                 });
                 await WikiPageTableGateway.deleteAll();
                 if (!mounted) return;
-                await context.read<WikiIndexProvider>().refreshWikiPages();
+                final wikiIndexProvider = this.context.read<WikiIndexProvider>();
+                await wikiIndexProvider.refreshWikiPages();
                 reloadData();
-
-                if (!mounted) return;
               },
               trailing: Icon(Icons.delete_forever_outlined,
                   color: context.colorTheme.primary),
