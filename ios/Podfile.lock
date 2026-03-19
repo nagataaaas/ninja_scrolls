@@ -1,19 +1,11 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_inappwebview_ios (0.0.1):
-    - Flutter
-    - flutter_inappwebview_ios/Core (= 0.0.1)
-    - OrderedSet (~> 6.0.3)
-  - flutter_inappwebview_ios/Core (0.0.1):
-    - Flutter
-    - OrderedSet (~> 6.0.3)
   - flutter_native_splash (2.4.3):
     - Flutter
   - flutter_platform_alert (0.0.1):
     - Flutter
   - flutter_secure_storage (6.0.0):
     - Flutter
-  - OrderedSet (6.0.3)
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -35,7 +27,6 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_platform_alert (from `.symlinks/plugins/flutter_platform_alert/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
@@ -47,15 +38,9 @@ DEPENDENCIES:
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
-SPEC REPOS:
-  trunk:
-    - OrderedSet
-
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  flutter_inappwebview_ios:
-    :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
   flutter_platform_alert:
@@ -78,12 +63,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_inappwebview_ios: 6f63631e2c62a7c350263b13fa5427aedefe81d4
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_native_splash: f71420956eb811e6d310720fee915f1d42852e7a
   flutter_platform_alert: 6a241c90f3cc350d0286deeefee9f52bee957019
   flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
-  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   package_info_plus: 115f4ad11e0698c8c1c5d8a689390df880f47e85
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
@@ -92,6 +75,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
   webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
 
-PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
+PODFILE CHECKSUM: 4f1c12611da7338d21589c0b2ecd6bd20b109694
 
 COCOAPODS: 1.16.2
